@@ -3,16 +3,19 @@
     const playerSprites = new Map();
 
     async function init(container) {
-        const width = container.clientWidth || 800;
-        const height = container.clientHeight || 600;
+        console.info("pixi-game.js: init start");
 
-        app = await PIXI.Application.init({
-            width,
-            height,
-            background: 0x202020,
+        const app = new PIXI.Application();
+        
+        await app.init({
+            width: 800,
+            height: 600,
+            backgroundColor: 0x202020,
         });
 
-        container.appendChild(app.canvas);
+        container.appendChild(app.canvas ?? app.view ?? app.renderer?.view ?? app.renderer?.canvas);
+
+        console.info("pixi-game.js: init end");
     }
 
     function ensurePlayerSprite(id) {
