@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameBar.Web", "GameBar.Web\GameBar.Web\GameBar.Web.csproj", "{81CCEDB5-9FE9-4EC1-9659-FFCA86150E57}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameBar.Web.Client", "GameBar.Web\GameBar.Web.Client\GameBar.Web.Client.csproj", "{95119F78-3E95-4B18-BFB7-D6C7851A4215}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81CCEDB5-9FE9-4EC1-9659-FFCA86150E57}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81CCEDB5-9FE9-4EC1-9659-FFCA86150E57}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81CCEDB5-9FE9-4EC1-9659-FFCA86150E57}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81CCEDB5-9FE9-4EC1-9659-FFCA86150E57}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95119F78-3E95-4B18-BFB7-D6C7851A4215}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95119F78-3E95-4B18-BFB7-D6C7851A4215}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95119F78-3E95-4B18-BFB7-D6C7851A4215}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95119F78-3E95-4B18-BFB7-D6C7851A4215}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
