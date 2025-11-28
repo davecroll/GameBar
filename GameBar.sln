@@ -1,8 +1,9 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameBar.Web", "GameBar.Web\GameBar.Web\GameBar.Web.csproj", "{81CCEDB5-9FE9-4EC1-9659-FFCA86150E57}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameBar.Web.Client", "GameBar.Web\GameBar.Web.Client\GameBar.Web.Client.csproj", "{95119F78-3E95-4B18-BFB7-D6C7851A4215}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameBar.Game", "GameBar.Game\GameBar.Game.csproj", "{F3F6F8A0-0000-4000-8000-000000000001}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +19,9 @@ Global
 		{95119F78-3E95-4B18-BFB7-D6C7851A4215}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95119F78-3E95-4B18-BFB7-D6C7851A4215}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95119F78-3E95-4B18-BFB7-D6C7851A4215}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3F6F8A0-0000-4000-8000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3F6F8A0-0000-4000-8000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3F6F8A0-0000-4000-8000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3F6F8A0-0000-4000-8000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

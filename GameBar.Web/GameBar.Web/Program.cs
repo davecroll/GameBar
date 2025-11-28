@@ -1,5 +1,10 @@
+using GameBar.Game.Simulation;
 using GameBar.Web.Client.Pages;
 using GameBar.Web.Components;
+using GameBar.Web.HostedServices;
+using GameBar.Web.Hubs;
+using GameBar.Web.Services;
+using GameBar.Web.Client.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
+
+builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<IGameSimulation, GameSimulation>();
+builder.Services.AddSingleton<GameSessionManager>();
+builder.Services.AddHostedService<GameLoopHostedService>();
+
+builder.Services.AddScoped<GameClientService>();
 
 var app = builder.Build();
 
@@ -32,5 +45,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(GameBar.Web.Client._Imports).Assembly);
+
+app.MapHub<GameHub>("/hubs/game");
 
 app.Run();

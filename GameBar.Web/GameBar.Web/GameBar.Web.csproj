@@ -8,8 +8,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\GameBar.Web.Client\GameBar.Web.Client.csproj"/>
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0"/>
+        <ProjectReference Include="..\GameBar.Web.Client\GameBar.Web.Client.csproj" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
+        <ProjectReference Include="..\..\GameBar.Game\GameBar.Game.csproj" />
     </ItemGroup>
 
 </Project>
