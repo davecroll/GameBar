@@ -5,7 +5,7 @@
     async function init(container) {
         console.info("pixi-game.js: init start");
 
-        const app = new PIXI.Application();
+        app = new PIXI.Application();
         
         await app.init({
             width: 800,
