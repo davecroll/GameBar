@@ -1,6 +1,5 @@
-﻿using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System;
+using System.Linq;
 using GameBar.Game.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -17,8 +16,11 @@ public class GameClientService
     private readonly List<InputCommand> _pendingInputs = new();
     private readonly Dictionary<string, PlayerState> _players = new();
 
-    private long _nextInputSequence = 0;
+    private long _nextInputSequence;
     private string? _localPlayerId;
+
+    // Added: cached reference to the ESM Pixi module
+    private IJSObjectReference? _pixiModule;
 
     public GameClientService(NavigationManager navigationManager, IJSRuntime jsRuntime)
     {
@@ -119,9 +121,17 @@ public class GameClientService
         player.Y += dy * speed * dtSeconds;
     }
 
+    private string GetPixiModuleUrl()
+    {
+        var url = new Uri(new Uri(_navigationManager.BaseUri), "dist/gameBarPixi.js");
+        return url.ToString();
+    }
+
+    // Load the ESM Pixi module once and call its init
     public async Task InitPixiAsync(ElementReference container)
     {
-        await _jsRuntime.InvokeVoidAsync("gameBarPixi.init", container);
+        _pixiModule ??= await _jsRuntime.InvokeAsync<IJSObjectReference>("import", GetPixiModuleUrl());
+        await _pixiModule.InvokeVoidAsync("init", container);
     }
 
     public async Task RenderAsync()
@@ -133,6 +143,7 @@ public class GameClientService
             y = p.Y
         }).ToArray();
 
-        await _jsRuntime.InvokeVoidAsync("gameBarPixi.render", new { players });
+        _pixiModule ??= await _jsRuntime.InvokeAsync<IJSObjectReference>("import", GetPixiModuleUrl());
+        await _pixiModule.InvokeVoidAsync("render", new { players });
     }
 }

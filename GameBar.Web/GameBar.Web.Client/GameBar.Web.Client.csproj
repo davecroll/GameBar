@@ -18,4 +18,11 @@
         <ProjectReference Include="..\..\GameBar.Game\GameBar.Game.csproj" />
     </ItemGroup>
 
+    <!-- Build TS/ESM assets on publish so wwwroot/dist has gameBarPixi.js -->
+    <Target Name="BuildFrontendAssets" BeforeTargets="PrepareForPublish" Condition="Exists('$(MSBuildProjectDirectory)\package.json')">
+        <Message Text="Running npm ci + npm run build in $(MSBuildProjectDirectory)" Importance="high" />
+        <Exec Command="npm ci" WorkingDirectory="$(MSBuildProjectDirectory)" />
+        <Exec Command="npm run build" WorkingDirectory="$(MSBuildProjectDirectory)" />
+    </Target>
+
 </Project>
