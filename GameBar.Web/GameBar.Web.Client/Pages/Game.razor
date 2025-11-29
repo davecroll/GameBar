@@ -2,6 +2,7 @@
 @using GameBar.Web.Client.Services
 @inject GameClientService GameClient
 @rendermode InteractiveAuto
+@implements IAsyncDisposable
 
 <div @onkeydown="HandleKeyDown" tabindex="0" style="outline:none;">
     <div @ref="_gameContainer" style="width:800px;height:600px;border:1px solid #ccc;"></div>
@@ -30,5 +31,10 @@
         {
             await GameClient.SendInputAsync(up, down, left, right);
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await GameClient.DestroyAsync();
     }
 }

@@ -146,4 +146,25 @@ public class GameClientService
         _pixiModule ??= await _jsRuntime.InvokeAsync<IJSObjectReference>("import", GetPixiModuleUrl());
         await _pixiModule.InvokeVoidAsync("render", new { players });
     }
+
+    // Gracefully destroy Pixi and dispose the JS module reference
+    public async Task DestroyAsync()
+    {
+        if (_pixiModule is not null)
+        {
+            try
+            {
+                await _pixiModule.InvokeVoidAsync("destroy");
+            }
+            catch
+            {
+                // ignore errors during teardown
+            }
+            finally
+            {
+                await _pixiModule.DisposeAsync();
+                _pixiModule = null;
+            }
+        }
+    }
 }
