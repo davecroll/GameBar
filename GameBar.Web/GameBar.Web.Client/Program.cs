@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+builder.Services.AddScoped<GameBarPixiInterop>();
 builder.Services.AddScoped<GameClientService>();
 
 await builder.Build().RunAsync();

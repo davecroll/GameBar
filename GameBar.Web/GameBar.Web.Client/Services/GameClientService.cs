@@ -10,7 +10,7 @@ namespace GameBar.Web.Client.Services;
 public class GameClientService
 {
     private readonly NavigationManager _navigationManager;
-    private readonly IJSRuntime _jsRuntime;
+    private readonly GameBarPixiInterop _pixi;
 
     private HubConnection? _connection;
     private readonly List<InputCommand> _pendingInputs = new();
@@ -19,13 +19,10 @@ public class GameClientService
     private long _nextInputSequence;
     private string? _localPlayerId;
 
-    // Added: cached reference to the ESM Pixi module
-    private IJSObjectReference? _pixiModule;
-
-    public GameClientService(NavigationManager navigationManager, IJSRuntime jsRuntime)
+    public GameClientService(NavigationManager navigationManager, GameBarPixiInterop pixi)
     {
         _navigationManager = navigationManager;
-        _jsRuntime = jsRuntime;
+        _pixi = pixi;
     }
 
     public async Task InitializeAsync()
@@ -121,50 +118,21 @@ public class GameClientService
         player.Y += dy * speed * dtSeconds;
     }
 
-    private string GetPixiModuleUrl()
-    {
-        var url = new Uri(new Uri(_navigationManager.BaseUri), "dist/gameBarPixi.js");
-        return url.ToString();
-    }
-
     // Load the ESM Pixi module once and call its init
     public async Task InitPixiAsync(ElementReference container)
     {
-        _pixiModule ??= await _jsRuntime.InvokeAsync<IJSObjectReference>("import", GetPixiModuleUrl());
-        await _pixiModule.InvokeVoidAsync("init", container);
+        await _pixi.InitAsync(container);
     }
 
-    public async Task RenderAsync()
+    private async Task RenderAsync()
     {
-        var players = _players.Values.Select(p => new
-        {
-            id = p.PlayerId,
-            x = p.X,
-            y = p.Y
-        }).ToArray();
-
-        _pixiModule ??= await _jsRuntime.InvokeAsync<IJSObjectReference>("import", GetPixiModuleUrl());
-        await _pixiModule.InvokeVoidAsync("render", new { players });
+        var players = _players.Values.Select(p => new PixiPlayer(p.PlayerId, p.X, p.Y)).ToArray();
+        await _pixi.RenderAsync(players);
     }
 
-    // Gracefully destroy Pixi and dispose the JS module reference
+    // Gracefully destroy Pixi
     public async Task DestroyAsync()
     {
-        if (_pixiModule is not null)
-        {
-            try
-            {
-                await _pixiModule.InvokeVoidAsync("destroy");
-            }
-            catch
-            {
-                // ignore errors during teardown
-            }
-            finally
-            {
-                await _pixiModule.DisposeAsync();
-                _pixiModule = null;
-            }
-        }
+        await _pixi.DestroyAsync();
     }
 }

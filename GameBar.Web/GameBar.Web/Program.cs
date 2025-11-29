@@ -19,6 +19,7 @@ builder.Services.AddSingleton<IGameSimulation, GameSimulation>();
 builder.Services.AddSingleton<GameSessionManager>();
 builder.Services.AddHostedService<GameLoopHostedService>();
 
+builder.Services.AddScoped<GameBarPixiInterop>();
 builder.Services.AddScoped<GameClientService>();
 
 var app = builder.Build();
