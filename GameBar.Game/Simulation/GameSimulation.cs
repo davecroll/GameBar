@@ -1,4 +1,5 @@
 ﻿using GameBar.Game.Models;
+using GameBar.Game.Simulation;
 
 namespace GameBar.Game.Simulation;
 
@@ -7,8 +8,6 @@ public class GameSimulation : IGameSimulation
     public GameState State { get; } = new();
 
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
-
-    private const float Speed = 25f; // units per second
 
     public void AddPlayer(string playerId)
     {
@@ -49,7 +48,7 @@ public class GameSimulation : IGameSimulation
             }
             else
             {
-                (player.VX, player.VY) = InputToVelocity(input);
+                (player.VX, player.VY) = InputProcessing.InputToVelocity(input);
             }
 
             player.X += player.VX * dtSeconds;
@@ -59,23 +58,4 @@ public class GameSimulation : IGameSimulation
         State.Tick++;
         State.LastUpdated = DateTimeOffset.UtcNow;
     }
-
-    private static (float vx, float vy) InputToVelocity(InputCommand input)
-    {
-        float dx = 0, dy = 0;
-        if (input.Up) dy -= 1;
-        if (input.Down) dy += 1;
-        if (input.Left) dx -= 1;
-        if (input.Right) dx += 1;
-
-        var length = MathF.Sqrt(dx * dx + dy * dy);
-        if (length > 0)
-        {
-            dx /= length;
-            dy /= length;
-        }
-
-        return (dx * Speed, dy * Speed);
-    }
 }
-

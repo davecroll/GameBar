@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using GameBar.Game.Models;
+using GameBar.Game.Simulation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -72,7 +73,7 @@ public class GameClientService
 
         await _connection.SendAsync("SendInput", input);
 
-        // simple client-side prediction: apply instantly
+        // simple client-side prediction: apply instantly using shared input processing
         if (_localPlayerId is not null && _players.TryGetValue(_localPlayerId, out var player))
         {
             ApplyInputLocally(player, input, TimeSpan.FromMilliseconds(50));
@@ -99,23 +100,9 @@ public class GameClientService
     private void ApplyInputLocally(PlayerState player, InputCommand input, TimeSpan dt)
     {
         var dtSeconds = (float)dt.TotalSeconds;
-        float dx = 0, dy = 0;
-        if (input.Up) dy -= 1;
-        if (input.Down) dy += 1;
-        if (input.Left) dx -= 1;
-        if (input.Right) dx += 1;
-
-        var length = MathF.Sqrt(dx * dx + dy * dy);
-        if (length > 0)
-        {
-            dx /= length;
-            dy /= length;
-        }
-
-        const float speed = 25f;
-
-        player.X += dx * speed * dtSeconds;
-        player.Y += dy * speed * dtSeconds;
+        var (vx, vy) = InputProcessing.InputToVelocity(input);
+        player.X += vx * dtSeconds;
+        player.Y += vy * dtSeconds;
     }
 
     // Load the ESM Pixi module once and call its init
