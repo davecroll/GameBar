@@ -7,7 +7,7 @@ namespace GameBar.Game.Simulation;
 /// </summary>
 public static class InputProcessing
 {
-    public const float Speed = 25f; // units per second
+    public const float Speed = 75f; // units per second
 
     /// <summary>
     /// Converts directional input flags into a normalized velocity vector scaled by Speed.
