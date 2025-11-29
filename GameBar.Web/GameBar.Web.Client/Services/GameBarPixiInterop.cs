@@ -45,6 +45,24 @@ public sealed class GameBarPixiInterop : IAsyncDisposable
         var module = await GetModuleAsync();
         await module.InvokeVoidAsync("init", container);
     }
+    
+    public async Task LoadAssetsAsync()
+    {
+        if (_destroyed)
+            return;
+
+        var assetDict = new Dictionary<string, Uri>()
+        {
+            { "idle", new Uri(new Uri(_navigation.BaseUri), "assets/Player_Idle.png") },
+            { "run", new Uri(new Uri(_navigation.BaseUri), "assets/Player_Run.png") }
+        };
+
+        var module = await GetModuleAsync();
+        foreach (var kvp in assetDict)
+        {
+            await module.InvokeVoidAsync("loadAsset", kvp.Key, kvp.Value.ToString());
+        }
+    }
 
     /// <summary>
     /// Renders the current list of players.

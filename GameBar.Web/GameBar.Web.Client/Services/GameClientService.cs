@@ -109,6 +109,7 @@ public class GameClientService
     public async Task InitPixiAsync(ElementReference container)
     {
         await _pixi.InitAsync(container);
+        await _pixi.LoadAssetsAsync();
     }
 
     private async Task RenderAsync()
