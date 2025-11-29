@@ -8,7 +8,7 @@ public class GameSimulation : IGameSimulation
 
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
 
-    private const float Speed = 5f; // units per second
+    private const float Speed = 25f; // units per second
 
     public void AddPlayer(string playerId)
     {

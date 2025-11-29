@@ -115,7 +115,7 @@ public class GameClientService
             dy /= length;
         }
 
-        const float speed = 5f;
+        const float speed = 25f;
 
         player.X += dx * speed * dtSeconds;
         player.Y += dy * speed * dtSeconds;
