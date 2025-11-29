@@ -72,7 +72,7 @@ public sealed class GameBarPixiInterop : IAsyncDisposable
         if (_destroyed)
             return;
         var module = await GetModuleAsync();
-        var jsPlayers = players.Select(p => new { id = p.Id, x = p.X, y = p.Y }).ToArray();
+        var jsPlayers = players.Select(p => new { id = p.Id, x = p.X, y = p.Y, frameIndex = p.FrameIndex, anim = p.Anim }).ToArray();
         await module.InvokeVoidAsync("render", new { players = jsPlayers });
     }
 
@@ -108,4 +108,3 @@ public sealed class GameBarPixiInterop : IAsyncDisposable
         await DestroyAsync();
     }
 }
-

@@ -1,8 +1,8 @@
-﻿import {Application, Assets, Graphics, Sprite} from 'pixi.js';
+﻿import {Application, Assets, Sprite, Texture, Rectangle} from 'pixi.js';
 
 // Simple PixiJS wrapper exposing init/render/destroy as ES module exports
 let app: Application | null = null;
-let textures: Record<string, any> = {};
+let textures: Record<string, Texture> = {} as any;
 
 export async function init(container: HTMLElement) {
   if (app) return;
@@ -14,11 +14,10 @@ export async function init(container: HTMLElement) {
 
 export async function loadAsset(key: string, url: string) {
   if (!app) return;
-  const texture = await Assets.load(url);
-  textures[key] = texture;
+  textures[key] = await Assets.load(url) as Texture;
 }
 
-export async function render(args: { players: Array<{ id: string; x: number; y: number }> }) {
+export async function render(args: { players: Array<{ id: string; x: number; y: number; frameIndex: number; anim: string }> }) {
   if (!app) return;
   const { players } = args;
 
@@ -26,12 +25,27 @@ export async function render(args: { players: Array<{ id: string; x: number; y: 
   app.stage.removeChildren();
 
   for (const p of players) {
-    // Create a new Sprite.
-    const bunny = new Sprite(textures['idle'] || null);
-    bunny.x = p.x;
-    bunny.y = p.y;
+    const baseTex = textures[p.anim] ?? textures['idle'];
+    if (!baseTex) continue;
 
-    app.stage.addChild(bunny);
+    const frameWidth = 48;
+    const frameHeight = 48;
+    const framesCount = p.anim === 'run' ? 8 : 10;
+    const idx = ((p.frameIndex % framesCount) + framesCount) % framesCount; // safe modulo
+
+    // Compute source rectangle on the spritesheet (horizontal strip)
+    const x = idx * frameWidth;
+    const y = 0;
+
+    const rect = new Rectangle(x, y, frameWidth, frameHeight);
+    const frame = new Texture({ source: baseTex.source, frame: rect });
+
+    const sprite = new Sprite(frame);
+    sprite.x = p.x;
+    sprite.y = p.y;
+    sprite.anchor.set(0.5, 0.5);
+
+    app.stage.addChild(sprite);
   }
 }
 

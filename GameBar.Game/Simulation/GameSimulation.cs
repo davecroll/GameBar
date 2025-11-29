@@ -9,6 +9,9 @@ public class GameSimulation : IGameSimulation
 
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
 
+    private const int DebounceTicks = 2; // require sustained state for N ticks
+    private readonly Dictionary<string, (MovementState state, long sinceTick)> _stateCandidate = new();
+
     public void AddPlayer(string playerId)
     {
         if (!State.Players.ContainsKey(playerId))
@@ -19,7 +22,11 @@ public class GameSimulation : IGameSimulation
                 X = 0,
                 Y = 0,
                 VX = 0,
-                VY = 0
+                VY = 0,
+                MovementState = MovementState.Idle,
+                IdleStartTick = State.Tick,
+                RunningStartTick = 0,
+                LastActivityTick = State.Tick
             };
         }
     }
@@ -28,6 +35,7 @@ public class GameSimulation : IGameSimulation
     {
         State.Players.Remove(playerId);
         _latestInputs.Remove(playerId);
+        _stateCandidate.Remove(playerId);
     }
 
     public void EnqueueInput(string playerId, InputCommand input)
@@ -53,6 +61,32 @@ public class GameSimulation : IGameSimulation
 
             player.X += player.VX * dtSeconds;
             player.Y += player.VY * dtSeconds;
+
+            var desired = (Math.Abs(player.VX) < 0.0001f && Math.Abs(player.VY) < 0.0001f)
+                ? MovementState.Idle
+                : MovementState.Running;
+
+            if (!_stateCandidate.TryGetValue(playerId, out var cand) || cand.state != desired)
+            {
+                _stateCandidate[playerId] = (desired, State.Tick);
+            }
+            else
+            {
+                var sustained = State.Tick - cand.sinceTick;
+                if (sustained >= DebounceTicks && player.MovementState != desired)
+                {
+                    player.MovementState = desired;
+                    if (desired == MovementState.Idle)
+                    {
+                        player.IdleStartTick = State.Tick;
+                    }
+                    else
+                    {
+                        player.RunningStartTick = State.Tick;
+                    }
+                    player.LastActivityTick = State.Tick;
+                }
+            }
         }
 
         State.Tick++;

@@ -20,6 +20,13 @@ public class GameClientService
     private long _nextInputSequence;
     private string? _localPlayerId;
 
+    private long _latestServerTick;
+    private DateTimeOffset _lastSnapshotReceivedAt;
+
+    private const int TickDurationMs = 50; // must match server
+    private const int IdleFrameDurationMs = 250;
+    private const int RunFrameDurationMs = 100; // faster running animation
+
     public GameClientService(NavigationManager navigationManager, GameBarPixiInterop pixi)
     {
         _navigationManager = navigationManager;
@@ -76,7 +83,7 @@ public class GameClientService
         // simple client-side prediction: apply instantly using shared input processing
         if (_localPlayerId is not null && _players.TryGetValue(_localPlayerId, out var player))
         {
-            ApplyInputLocally(player, input, TimeSpan.FromMilliseconds(50));
+            ApplyInputLocally(player, input, TimeSpan.FromMilliseconds(TickDurationMs));
             await RenderAsync();
         }
     }
@@ -88,6 +95,9 @@ public class GameClientService
         {
             _players[kvp.Key] = kvp.Value;
         }
+
+        _latestServerTick = snapshot.ServerTick;
+        _lastSnapshotReceivedAt = DateTimeOffset.UtcNow;
 
         if (_localPlayerId is not null && snapshot.LastProcessedInputSequenceByPlayer.TryGetValue(_localPlayerId, out var ackSequence))
         {
@@ -112,9 +122,38 @@ public class GameClientService
         await _pixi.LoadAssetsAsync();
     }
 
+    private long GetCurrentTick()
+    {
+        var elapsedMs = (DateTimeOffset.UtcNow - _lastSnapshotReceivedAt).TotalMilliseconds;
+        var addTicks = (long)Math.Floor(elapsedMs / TickDurationMs);
+        return _latestServerTick + addTicks;
+    }
+
     private async Task RenderAsync()
     {
-        var players = _players.Values.Select(p => new PixiPlayer(p.PlayerId, p.X, p.Y)).ToArray();
+        var currentTick = GetCurrentTick();
+
+        int idleStepTicks = Math.Max(1, IdleFrameDurationMs / TickDurationMs);
+        int runStepTicks = Math.Max(1, RunFrameDurationMs / TickDurationMs);
+
+        var players = _players.Values.Select(p =>
+        {
+            string anim = p.MovementState == MovementState.Running ? "run" : "idle";
+            long startTick = p.MovementState == MovementState.Running ? p.RunningStartTick : p.IdleStartTick;
+            int frames = anim == "run" ? 8 : 10;
+            int stepTicks = anim == "run" ? runStepTicks : idleStepTicks;
+            int frameIndex = 0;
+            if (startTick > 0)
+            {
+                var delta = currentTick - startTick;
+                if (delta >= 0)
+                {
+                    frameIndex = (int)((delta / stepTicks) % frames);
+                }
+            }
+            return new PixiPlayer(p.PlayerId, p.X, p.Y, frameIndex, anim);
+        }).ToArray();
+
         await _pixi.RenderAsync(players);
     }
 
