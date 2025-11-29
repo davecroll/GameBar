@@ -13,4 +13,9 @@
         <ProjectReference Include="..\..\GameBar.Game\GameBar.Game.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\assets\Player_Idle.png" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\Player_Run.png" />
+    </ItemGroup>
+
 </Project>
