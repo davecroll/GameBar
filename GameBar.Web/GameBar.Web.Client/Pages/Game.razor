@@ -1,15 +1,20 @@
 ﻿@page "/game"
 @using GameBar.Web.Client.Services
+@using Microsoft.AspNetCore.Components.Web
 @inject GameClientService GameClient
 @rendermode InteractiveAuto
 @implements IAsyncDisposable
 
-<div @onkeydown="HandleKeyDown" tabindex="0" style="outline:none;">
+<div @ref="_focusDiv" @onkeydown="HandleKeyDown" @onkeyup="HandleKeyUp" tabindex="0" style="outline:none;">
     <div @ref="_gameContainer" style="width:800px;height:600px;border:1px solid #ccc;"></div>
 </div>
 
 @code {
     private ElementReference _gameContainer;
+    private ElementReference _focusDiv;
+
+    // Track current key state so we can send updated inputs on both keydown and keyup
+    private bool _up, _down, _left, _right;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -17,19 +22,69 @@
         {
             await GameClient.InitializeAsync();
             await GameClient.InitPixiAsync(_gameContainer);
+            // Ensure the div has focus so key events fire (esp. after navigation)
+            await _focusDiv.FocusAsync();
         }
     }
 
+    private Task SendCurrentInputAsync() => GameClient.SendInputAsync(_up, _down, _left, _right);
+
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        var up = e.Key == "w" || e.Key == "ArrowUp";
-        var down = e.Key == "s" || e.Key == "ArrowDown";
-        var left = e.Key == "a" || e.Key == "ArrowLeft";
-        var right = e.Key == "d" || e.Key == "ArrowRight";
-
-        if (up || down || left || right)
+        var changed = false;
+        switch (e.Key)
         {
-            await GameClient.SendInputAsync(up, down, left, right);
+            case "w":
+            case "ArrowUp":
+                if (!_up) { _up = true; changed = true; }
+                break;
+            case "s":
+            case "ArrowDown":
+                if (!_down) { _down = true; changed = true; }
+                break;
+            case "a":
+            case "ArrowLeft":
+                if (!_left) { _left = true; changed = true; }
+                break;
+            case "d":
+            case "ArrowRight":
+                if (!_right) { _right = true; changed = true; }
+                break;
+        }
+
+        if (changed)
+        {
+            await SendCurrentInputAsync();
+        }
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        var changed = false;
+        switch (e.Key)
+        {
+            case "w":
+            case "ArrowUp":
+                if (_up) { _up = false; changed = true; }
+                break;
+            case "s":
+            case "ArrowDown":
+                if (_down) { _down = false; changed = true; }
+                break;
+            case "a":
+            case "ArrowLeft":
+                if (_left) { _left = false; changed = true; }
+                break;
+            case "d":
+            case "ArrowRight":
+                if (_right) { _right = false; changed = true; }
+                break;
+        }
+
+        if (changed)
+        {
+            // Send updated input (possibly all false) so server stops movement
+            await SendCurrentInputAsync();
         }
     }
 
