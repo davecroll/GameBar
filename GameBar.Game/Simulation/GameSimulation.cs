@@ -10,13 +10,13 @@ public class GameSimulation : IGameSimulation
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
 
     private readonly MovementStateMachine _movementFsm = new();
-    private readonly ActionStateMachine _actionFsm = new(tickDurationMs: 50, jabFrameCount: 10, jabFrameDurationMs: 80);
+    private readonly ActionStateMachine _actionFsm = new(new[] { new PlayerFsm.Action.JabState(50, 10, 80) });
 
     public void AddPlayer(string playerId)
     {
         if (!State.Players.ContainsKey(playerId))
         {
-            State.Players[playerId] = new PlayerState
+            State.Players[playerId] = new PlayerSnapshot
             {
                 PlayerId = playerId,
                 X = 0,
@@ -24,8 +24,6 @@ public class GameSimulation : IGameSimulation
                 VX = 0,
                 VY = 0,
                 MovementState = MovementState.Idle,
-                IdleStartTick = State.Tick,
-                RunningStartTick = 0,
                 LastActivityTick = State.Tick,
                 MovementStateName = "Idle",
                 MovementStateStartTick = State.Tick

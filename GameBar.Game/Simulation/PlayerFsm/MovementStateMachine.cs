@@ -1,5 +1,4 @@
 ﻿using GameBar.Game.Models;
-using GameBar.Game.Simulation.PlayerFsm;
 using GameBar.Game.Simulation.PlayerFsm.Movement;
 
 namespace GameBar.Game.Simulation.PlayerFsm;
@@ -14,7 +13,7 @@ public sealed class MovementStateMachine
     private const int DebounceTicks = 2;
     private readonly Dictionary<string, (string desiredName, long sinceTick)> _candidates = new();
 
-    public void Evaluate(PlayerState player, long tick)
+    public void Evaluate(PlayerSnapshot player, long tick)
     {
         // Initialize name on first evaluation
         if (string.IsNullOrEmpty(player.MovementStateName))

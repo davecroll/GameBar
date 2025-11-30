@@ -17,7 +17,7 @@ public class GameClientService
 
     private HubConnection? _connection;
     private readonly List<InputCommand> _pendingInputs = new();
-    private readonly Dictionary<string, PlayerState> _players = new();
+    private readonly Dictionary<string, PlayerSnapshot> _players = new();
 
     private long _nextInputSequence;
     private string? _localPlayerId;
@@ -128,7 +128,7 @@ public class GameClientService
         _ = RenderAsync();
     }
 
-    private void ApplyInputLocally(PlayerState player, InputCommand input, TimeSpan dt)
+    private void ApplyInputLocally(PlayerSnapshot player, InputCommand input, TimeSpan dt)
     {
         var dtSeconds = (float)dt.TotalSeconds;
         var (vx, vy) = InputProcessing.InputToVelocity(input);

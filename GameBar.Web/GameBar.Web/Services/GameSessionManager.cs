@@ -50,11 +50,10 @@ public class GameSessionManager
         {
             GameId = _simulation.State.GameId,
             ServerTick = _simulation.State.Tick,
-            Players = new Dictionary<string, PlayerState>(_simulation.State.Players),
+            Players = new Dictionary<string, PlayerSnapshot>(_simulation.State.Players),
             LastProcessedInputSequenceByPlayer = new Dictionary<string, long>(_lastProcessedInputSequenceByPlayer)
         };
 
         await _hubContext.Clients.Group(DefaultGroupName).SendAsync("ReceiveSnapshot", snapshot, cancellationToken);
     }
 }
-

@@ -7,7 +7,7 @@ public enum MovementState
     Running = 2
 }
 
-public class PlayerState
+public class PlayerSnapshot
 {
     public string PlayerId { get; set; } = string.Empty;
     public float X { get; set; }
@@ -17,8 +17,6 @@ public class PlayerState
 
     // Movement/animation state tracked by server ticks
     public MovementState MovementState { get; set; } = MovementState.Unknown;
-    public long IdleStartTick { get; set; }
-    public long RunningStartTick { get; set; }
     public long LastActivityTick { get; set; }
 
     // Data-driven layered states

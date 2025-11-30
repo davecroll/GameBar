@@ -12,9 +12,9 @@ public interface IPlayerState
     string Layer { get; } // e.g., "Movement"
     int Priority { get; } // higher value wins
 
-    bool CanEnter(PlayerState player);
-    bool CanContinue(PlayerState player);
+    bool CanEnter(PlayerSnapshot player);
+    bool CanContinue(PlayerSnapshot player);
 
-    void OnEnter(PlayerState player, long tick);
-    void OnExit(PlayerState player, long tick);
+    void OnEnter(PlayerSnapshot player, long tick);
+    void OnExit(PlayerSnapshot player, long tick);
 }
