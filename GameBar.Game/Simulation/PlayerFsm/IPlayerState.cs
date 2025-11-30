@@ -18,4 +18,3 @@ public interface IPlayerState
     void OnEnter(PlayerState player, long tick);
     void OnExit(PlayerState player, long tick);
 }
-

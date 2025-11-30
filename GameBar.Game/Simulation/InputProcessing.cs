@@ -29,5 +29,7 @@ public static class InputProcessing
 
         return (dx * Speed, dy * Speed);
     }
-}
 
+    public static bool IsMoving((float vx, float vy) v)
+        => Math.Abs(v.vx) >= 0.0001f || Math.Abs(v.vy) >= 0.0001f;
+}

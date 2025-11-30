@@ -17,7 +17,7 @@ export async function loadAsset(key: string, url: string) {
   textures[key] = await Assets.load(url) as Texture;
 }
 
-export async function render(args: { players: Array<{ id: string; x: number; y: number; frameIndex: number; anim: string }> }) {
+export async function render(args: { players: Array<{ id: string; x: number; y: number; frameIndex: number; anim: string; frameWidth: number; frameHeight: number }> }) {
   if (!app) return;
   const { players } = args;
 
@@ -28,16 +28,11 @@ export async function render(args: { players: Array<{ id: string; x: number; y: 
     const baseTex = textures[p.anim] ?? textures['idle'];
     if (!baseTex) continue;
 
-    const frameWidth = 48;
-    const frameHeight = 48;
-    // framesCount is not needed here because we clamp modulo on client
     const idx = p.frameIndex;
-
-    // Compute source rectangle on the spritesheet (horizontal strip)
-    const x = idx * frameWidth;
+    const x = idx * p.frameWidth;
     const y = 0;
 
-    const rect = new Rectangle(x, y, frameWidth, frameHeight);
+    const rect = new Rectangle(x, y, p.frameWidth, p.frameHeight);
     const frame = new Texture({ source: baseTex.source, frame: rect });
 
     const sprite = new Sprite(frame);

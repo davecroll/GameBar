@@ -13,8 +13,7 @@
     private ElementReference _gameContainer;
     private ElementReference _focusDiv;
 
-    // Track current key state so we can send updated inputs on both keydown and keyup
-    private bool _up, _down, _left, _right;
+    private bool _up, _down, _left, _right, _attack;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -22,12 +21,11 @@
         {
             await GameClient.InitializeAsync();
             await GameClient.InitPixiAsync(_gameContainer);
-            // Ensure the div has focus so key events fire (esp. after navigation)
             await _focusDiv.FocusAsync();
         }
     }
 
-    private Task SendCurrentInputAsync() => GameClient.SendInputAsync(_up, _down, _left, _right);
+    private Task SendCurrentInputAsync() => GameClient.SendInputAsync(_up, _down, _left, _right, _attack);
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
@@ -49,6 +47,10 @@
             case "d":
             case "ArrowRight":
                 if (!_right) { _right = true; changed = true; }
+                break;
+            case "j":
+            case "J":
+                if (!_attack) { _attack = true; changed = true; }
                 break;
         }
 
@@ -79,11 +81,14 @@
             case "ArrowRight":
                 if (_right) { _right = false; changed = true; }
                 break;
+            case "j":
+            case "J":
+                if (_attack) { _attack = false; changed = true; }
+                break;
         }
 
         if (changed)
         {
-            // Send updated input (possibly all false) so server stops movement
             await SendCurrentInputAsync();
         }
     }

@@ -10,6 +10,7 @@ public class GameSimulation : IGameSimulation
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
 
     private readonly MovementStateMachine _movementFsm = new();
+    private readonly ActionStateMachine _actionFsm = new(tickDurationMs: 50, jabFrameCount: 10, jabFrameDurationMs: 80);
 
     public void AddPlayer(string playerId)
     {
@@ -25,7 +26,9 @@ public class GameSimulation : IGameSimulation
                 MovementState = MovementState.Idle,
                 IdleStartTick = State.Tick,
                 RunningStartTick = 0,
-                LastActivityTick = State.Tick
+                LastActivityTick = State.Tick,
+                MovementStateName = "Idle",
+                MovementStateStartTick = State.Tick
             };
         }
     }
@@ -47,7 +50,9 @@ public class GameSimulation : IGameSimulation
 
         foreach (var (playerId, player) in State.Players.ToArray())
         {
-            if (!_latestInputs.TryGetValue(playerId, out var input))
+            _latestInputs.TryGetValue(playerId, out var input);
+
+            if (input is null)
             {
                 player.VX = 0;
                 player.VY = 0;
@@ -61,6 +66,7 @@ public class GameSimulation : IGameSimulation
             player.Y += player.VY * dtSeconds;
 
             _movementFsm.Evaluate(player, State.Tick);
+            _actionFsm.Evaluate(player, input, State.Tick);
         }
 
         State.Tick++;

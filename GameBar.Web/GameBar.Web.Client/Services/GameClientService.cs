@@ -78,7 +78,7 @@ public class GameClientService
         _localPlayerId = _connection.ConnectionId;
     }
 
-    public async Task SendInputAsync(bool up, bool down, bool left, bool right)
+    public async Task SendInputAsync(bool up, bool down, bool left, bool right, bool attack)
     {
         if (_connection is null)
         {
@@ -93,7 +93,8 @@ public class GameClientService
             Up = up,
             Down = down,
             Left = left,
-            Right = right
+            Right = right,
+            Attack = attack
         };
 
         _pendingInputs.Add(input);
@@ -103,7 +104,7 @@ public class GameClientService
         // simple client-side prediction: apply instantly using shared input processing
         if (_localPlayerId is not null && _players.TryGetValue(_localPlayerId, out var player))
         {
-            ApplyInputLocally(player, input, TimeSpan.FromMilliseconds(TickDurationMs));
+            ApplyInputLocally(player, input, TimeSpan.FromMilliseconds(_manifest?.TickDurationMs ?? TickDurationMs));
             await RenderAsync();
         }
     }
@@ -157,7 +158,6 @@ public class GameClientService
 
         var players = _players.Values.Select(p =>
         {
-            // Choose layer: if ActionStateName present -> action, else movement
             var stateName = string.IsNullOrEmpty(p.ActionStateName) ? p.MovementStateName : p.ActionStateName!;
             var startTick = string.IsNullOrEmpty(p.ActionStateName) ? p.MovementStateStartTick : p.ActionStateStartTick ?? p.MovementStateStartTick;
             var meta = manifest.States.TryGetValue(stateName, out var m) ? m : manifest.States["Idle"];
@@ -172,8 +172,7 @@ public class GameClientService
                 frameIndex = meta.Loop ? steps % frames : Math.Min(frames - 1, steps);
             }
 
-            var animKey = meta.AssetKey;
-            return new PixiPlayer(p.PlayerId, p.X, p.Y, frameIndex, animKey);
+            return new PixiPlayer(p.PlayerId, p.X, p.Y, frameIndex, meta.AssetKey, meta.FrameWidth, meta.FrameHeight);
         }).ToArray();
 
         await _pixi.RenderAsync(players);
