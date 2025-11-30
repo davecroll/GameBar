@@ -1,5 +1,5 @@
 ﻿using GameBar.Game.Models;
-using GameBar.Game.Simulation;
+using GameBar.Game.Simulation.PlayerFsm;
 
 namespace GameBar.Game.Simulation;
 
@@ -9,8 +9,7 @@ public class GameSimulation : IGameSimulation
 
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
 
-    private const int DebounceTicks = 2; // require sustained state for N ticks
-    private readonly Dictionary<string, (MovementState state, long sinceTick)> _stateCandidate = new();
+    private readonly MovementStateMachine _movementFsm = new();
 
     public void AddPlayer(string playerId)
     {
@@ -35,7 +34,6 @@ public class GameSimulation : IGameSimulation
     {
         State.Players.Remove(playerId);
         _latestInputs.Remove(playerId);
-        _stateCandidate.Remove(playerId);
     }
 
     public void EnqueueInput(string playerId, InputCommand input)
@@ -62,31 +60,7 @@ public class GameSimulation : IGameSimulation
             player.X += player.VX * dtSeconds;
             player.Y += player.VY * dtSeconds;
 
-            var desired = (Math.Abs(player.VX) < 0.0001f && Math.Abs(player.VY) < 0.0001f)
-                ? MovementState.Idle
-                : MovementState.Running;
-
-            if (!_stateCandidate.TryGetValue(playerId, out var cand) || cand.state != desired)
-            {
-                _stateCandidate[playerId] = (desired, State.Tick);
-            }
-            else
-            {
-                var sustained = State.Tick - cand.sinceTick;
-                if (sustained >= DebounceTicks && player.MovementState != desired)
-                {
-                    player.MovementState = desired;
-                    if (desired == MovementState.Idle)
-                    {
-                        player.IdleStartTick = State.Tick;
-                    }
-                    else
-                    {
-                        player.RunningStartTick = State.Tick;
-                    }
-                    player.LastActivityTick = State.Tick;
-                }
-            }
+            _movementFsm.Evaluate(player, State.Tick);
         }
 
         State.Tick++;

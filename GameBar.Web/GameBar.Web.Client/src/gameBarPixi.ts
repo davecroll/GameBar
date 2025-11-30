@@ -30,8 +30,8 @@ export async function render(args: { players: Array<{ id: string; x: number; y: 
 
     const frameWidth = 48;
     const frameHeight = 48;
-    const framesCount = p.anim === 'run' ? 8 : 10;
-    const idx = ((p.frameIndex % framesCount) + framesCount) % framesCount; // safe modulo
+    // framesCount is not needed here because we clamp modulo on client
+    const idx = p.frameIndex;
 
     // Compute source rectangle on the spritesheet (horizontal strip)
     const x = idx * frameWidth;

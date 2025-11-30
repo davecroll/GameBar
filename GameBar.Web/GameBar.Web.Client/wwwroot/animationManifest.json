@@ -1,0 +1,10 @@
+﻿{
+  "TickDurationMs": 50,
+  "States": {
+    "Idle": { "AssetKey": "idle", "FrameCount": 10, "FrameWidth": 48, "FrameHeight": 48, "FrameDurationMs": 250, "Loop": true },
+    "Run":  { "AssetKey": "run",  "FrameCount": 8,  "FrameWidth": 48, "FrameHeight": 48, "FrameDurationMs": 100, "Loop": true },
+    "Jab":  { "AssetKey": "jab",  "FrameCount": 10, "FrameWidth": 48, "FrameHeight": 48, "FrameDurationMs": 80,  "Loop": false }
+  },
+  "Layers": ["Movement", "Action"]
+}
+

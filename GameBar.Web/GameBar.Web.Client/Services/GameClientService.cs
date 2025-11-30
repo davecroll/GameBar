@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Net.Http;
+using System.Text.Json;
 using GameBar.Game.Models;
 using GameBar.Game.Simulation;
 using Microsoft.AspNetCore.Components;
@@ -27,6 +29,8 @@ public class GameClientService
     private const int IdleFrameDurationMs = 250;
     private const int RunFrameDurationMs = 100; // faster running animation
 
+    private AnimationManifest? _manifest;
+
     public GameClientService(NavigationManager navigationManager, GameBarPixiInterop pixi)
     {
         _navigationManager = navigationManager;
@@ -38,6 +42,22 @@ public class GameClientService
         if (_connection is not null)
         {
             return;
+        }
+
+        // Load manifest
+        try
+        {
+            using var http = new HttpClient { BaseAddress = new Uri(_navigationManager.BaseUri) };
+            var json = await http.GetStringAsync("animationManifest.json");
+            _manifest = JsonSerializer.Deserialize<AnimationManifest>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+        }
+        catch
+        {
+            // fallback if manifest load fails
+            _manifest = AnimationManifest.Default;
         }
 
         var hubUrl = new Uri(new Uri(_navigationManager.BaseUri), "hubs/game");
@@ -124,34 +144,36 @@ public class GameClientService
 
     private long GetCurrentTick()
     {
+        var tickMs = _manifest?.TickDurationMs ?? TickDurationMs;
         var elapsedMs = (DateTimeOffset.UtcNow - _lastSnapshotReceivedAt).TotalMilliseconds;
-        var addTicks = (long)Math.Floor(elapsedMs / TickDurationMs);
+        var addTicks = (long)Math.Floor(elapsedMs / tickMs);
         return _latestServerTick + addTicks;
     }
 
     private async Task RenderAsync()
     {
         var currentTick = GetCurrentTick();
-
-        int idleStepTicks = Math.Max(1, IdleFrameDurationMs / TickDurationMs);
-        int runStepTicks = Math.Max(1, RunFrameDurationMs / TickDurationMs);
+        var manifest = _manifest ?? AnimationManifest.Default;
 
         var players = _players.Values.Select(p =>
         {
-            string anim = p.MovementState == MovementState.Running ? "run" : "idle";
-            long startTick = p.MovementState == MovementState.Running ? p.RunningStartTick : p.IdleStartTick;
-            int frames = anim == "run" ? 8 : 10;
-            int stepTicks = anim == "run" ? runStepTicks : idleStepTicks;
+            // Choose layer: if ActionStateName present -> action, else movement
+            var stateName = string.IsNullOrEmpty(p.ActionStateName) ? p.MovementStateName : p.ActionStateName!;
+            var startTick = string.IsNullOrEmpty(p.ActionStateName) ? p.MovementStateStartTick : p.ActionStateStartTick ?? p.MovementStateStartTick;
+            var meta = manifest.States.TryGetValue(stateName, out var m) ? m : manifest.States["Idle"];
+
+            var stepTicks = Math.Max(1, meta.FrameDurationMs / manifest.TickDurationMs);
+            var frames = meta.FrameCount;
             int frameIndex = 0;
-            if (startTick > 0)
+            var delta = currentTick - startTick;
+            if (delta >= 0)
             {
-                var delta = currentTick - startTick;
-                if (delta >= 0)
-                {
-                    frameIndex = (int)((delta / stepTicks) % frames);
-                }
+                var steps = (int)(delta / stepTicks);
+                frameIndex = meta.Loop ? steps % frames : Math.Min(frames - 1, steps);
             }
-            return new PixiPlayer(p.PlayerId, p.X, p.Y, frameIndex, anim);
+
+            var animKey = meta.AssetKey;
+            return new PixiPlayer(p.PlayerId, p.X, p.Y, frameIndex, animKey);
         }).ToArray();
 
         await _pixi.RenderAsync(players);
@@ -161,5 +183,31 @@ public class GameClientService
     public async Task DestroyAsync()
     {
         await _pixi.DestroyAsync();
+    }
+
+    private sealed class AnimationManifest
+    {
+        public int TickDurationMs { get; set; } = 50;
+        public Dictionary<string, AnimationMeta> States { get; set; } = new();
+
+        public static AnimationManifest Default => new AnimationManifest
+        {
+            TickDurationMs = 50,
+            States = new Dictionary<string, AnimationMeta>
+            {
+                { "Idle", new AnimationMeta { AssetKey = "idle", FrameCount = 10, FrameWidth = 48, FrameHeight = 48, FrameDurationMs = 250, Loop = true } },
+                { "Run",  new AnimationMeta { AssetKey = "run",  FrameCount = 8,  FrameWidth = 48, FrameHeight = 48, FrameDurationMs = 100, Loop = true } },
+            }
+        };
+    }
+
+    private sealed class AnimationMeta
+    {
+        public string AssetKey { get; set; } = "idle";
+        public int FrameCount { get; set; }
+        public int FrameWidth { get; set; } = 48;
+        public int FrameHeight { get; set; } = 48;
+        public int FrameDurationMs { get; set; }
+        public bool Loop { get; set; } = true;
     }
 }

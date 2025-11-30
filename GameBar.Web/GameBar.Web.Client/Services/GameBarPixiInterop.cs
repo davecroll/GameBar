@@ -54,7 +54,8 @@ public sealed class GameBarPixiInterop : IAsyncDisposable
         var assetDict = new Dictionary<string, Uri>()
         {
             { "idle", new Uri(new Uri(_navigation.BaseUri), "assets/Player_Idle.png") },
-            { "run", new Uri(new Uri(_navigation.BaseUri), "assets/Player_Run.png") }
+            { "run", new Uri(new Uri(_navigation.BaseUri), "assets/Player_Run.png") },
+            { "jab", new Uri(new Uri(_navigation.BaseUri), "assets/Player_Jab.png") }
         };
 
         var module = await GetModuleAsync();

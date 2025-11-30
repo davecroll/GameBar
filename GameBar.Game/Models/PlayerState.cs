@@ -20,4 +20,10 @@ public class PlayerState
     public long IdleStartTick { get; set; }
     public long RunningStartTick { get; set; }
     public long LastActivityTick { get; set; }
+
+    // Data-driven layered states
+    public string MovementStateName { get; set; } = string.Empty;
+    public long MovementStateStartTick { get; set; }
+    public string? ActionStateName { get; set; }
+    public long? ActionStateStartTick { get; set; }
 }
