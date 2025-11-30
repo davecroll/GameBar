@@ -8,17 +8,8 @@ public sealed class JumpState : PlayerFsm.IPlayerState
     public string Layer => "Movement";
     public int Priority => 20; // higher than run/idle
 
-    public bool CanEnter(PlayerSnapshot player)
-    {
-        // Enter when upward vertical velocity > 0 and not grounded
-        return !player.IsGrounded && player.VY > 0.0f;
-    }
-
-    public bool CanContinue(PlayerSnapshot player)
-    {
-        // Continue until vertical velocity goes negative (start falling)
-        return !player.IsGrounded && player.VY > 0.0f;
-    }
+    public bool CanEnter(PlayerSnapshot player) => !player.IsGrounded && player.VY < 0.0f;
+    public bool CanContinue(PlayerSnapshot player) => !player.IsGrounded && player.VY < 0.0f;
 
     public void OnEnter(PlayerSnapshot player, long tick)
     {
