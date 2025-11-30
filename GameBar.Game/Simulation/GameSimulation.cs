@@ -19,11 +19,11 @@ public class GameSimulation : IGameSimulation
             State.Players[playerId] = new PlayerSnapshot
             {
                 PlayerId = playerId,
-                X = 0,
-                Y = 300, // ground line in view coordinates
+                X = 25,
+                Y = 100, // ground line in view coordinates
                 VX = 0,
                 VY = 0,
-                IsGrounded = true,
+                IsGrounded = false,
                 GroundY = 300,
                 MovementState = MovementState.Idle,
                 LastActivityTick = State.Tick,
