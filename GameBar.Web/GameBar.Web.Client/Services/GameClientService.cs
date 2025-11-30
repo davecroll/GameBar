@@ -78,13 +78,9 @@ public class GameClientService
         _localPlayerId = _connection.ConnectionId;
     }
 
-    public async Task SendInputAsync(bool up, bool down, bool left, bool right, bool attack)
+    public async Task SendInputAsync(bool up, bool down, bool left, bool right, bool attack, bool jump)
     {
-        if (_connection is null)
-        {
-            return;
-        }
-
+        if (_connection is null) return;
         var input = new InputCommand
         {
             PlayerId = _localPlayerId ?? string.Empty,
@@ -94,14 +90,11 @@ public class GameClientService
             Down = down,
             Left = left,
             Right = right,
-            Attack = attack
+            Attack = attack,
+            Jump = jump
         };
-
         _pendingInputs.Add(input);
-
         await _connection.SendAsync("SendInput", input);
-
-        // simple client-side prediction: apply instantly using shared input processing
         if (_localPlayerId is not null && _players.TryGetValue(_localPlayerId, out var player))
         {
             ApplyInputLocally(player, input, TimeSpan.FromMilliseconds(_manifest?.TickDurationMs ?? TickDurationMs));
@@ -131,7 +124,7 @@ public class GameClientService
     private void ApplyInputLocally(PlayerSnapshot player, InputCommand input, TimeSpan dt)
     {
         var dtSeconds = (float)dt.TotalSeconds;
-        var (vx, vy) = InputProcessing.InputToVelocity(input);
+        var (vx, vy) = InputProcessing.InputToHorizontalVelocity(input);
         player.X += vx * dtSeconds;
         player.Y += vy * dtSeconds;
     }

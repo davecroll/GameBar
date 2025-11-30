@@ -8,9 +8,9 @@ namespace GameBar.Game.Simulation.PlayerFsm;
 /// </summary>
 public sealed class MovementStateMachine
 {
-    private readonly IPlayerState[] _states = [ new IdleState(), new RunState() ];
+    private readonly IPlayerState[] _states = [ new IdleState(), new RunState(), new FallState(), new JumpState() ];
 
-    private const int DebounceTicks = 2;
+    private const int DebounceTicks = 1; // quicker state transitions for jump/fall responsiveness
     private readonly Dictionary<string, (string desiredName, long sinceTick)> _candidates = new();
 
     public void Evaluate(PlayerSnapshot player, long tick)
@@ -18,7 +18,7 @@ public sealed class MovementStateMachine
         // Initialize name on first evaluation
         if (string.IsNullOrEmpty(player.MovementStateName))
         {
-            player.MovementStateName = player.MovementState == MovementState.Running ? "Run" : "Idle";
+            player.MovementStateName = player.IsGrounded ? "Idle" : "Fall";
             player.MovementStateStartTick = tick;
         }
 
@@ -41,12 +41,7 @@ public sealed class MovementStateMachine
         }
 
         // If current differs, transition
-        string currentName = player.MovementState switch
-        {
-            MovementState.Running => "Run",
-            MovementState.Idle => "Idle",
-            _ => string.Empty
-        };
+        string currentName = player.MovementStateName;
 
         if (currentName != desired.Name)
         {

@@ -13,7 +13,7 @@
     private ElementReference _gameContainer;
     private ElementReference _focusDiv;
 
-    private bool _up, _down, _left, _right, _attack;
+    private bool _up, _down, _left, _right, _attack, _jump;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -25,7 +25,7 @@
         }
     }
 
-    private Task SendCurrentInputAsync() => GameClient.SendInputAsync(_up, _down, _left, _right, _attack);
+    private Task SendCurrentInputAsync() => GameClient.SendInputAsync(_up, _down, _left, _right, _attack, _jump);
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
@@ -51,6 +51,9 @@
             case "j":
             case "J":
                 if (!_attack) { _attack = true; changed = true; }
+                break;
+            case " ": // spacebar jump
+                if (!_jump) { _jump = true; changed = true; }
                 break;
         }
 
@@ -84,6 +87,9 @@
             case "j":
             case "J":
                 if (_attack) { _attack = false; changed = true; }
+                break;
+            case " ":
+                if (_jump) { _jump = false; changed = true; }
                 break;
         }
 

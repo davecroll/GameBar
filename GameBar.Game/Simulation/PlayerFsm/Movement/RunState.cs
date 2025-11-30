@@ -6,17 +6,14 @@ public sealed class RunState : PlayerFsm.IPlayerState
 {
     public string Name => "Run";
     public string Layer => "Movement";
-    public int Priority => 20; // higher than Idle
+    public int Priority => 10;
 
     public bool CanEnter(PlayerSnapshot player)
     {
-        return Math.Abs(player.VX) >= 0.0001f || Math.Abs(player.VY) >= 0.0001f;
+        return player.IsGrounded && Math.Abs(player.VX) >= 0.0001f;
     }
 
-    public bool CanContinue(PlayerSnapshot player)
-    {
-        return CanEnter(player);
-    }
+    public bool CanContinue(PlayerSnapshot player) => CanEnter(player);
 
     public void OnEnter(PlayerSnapshot player, long tick)
     {
@@ -26,8 +23,5 @@ public sealed class RunState : PlayerFsm.IPlayerState
         player.LastActivityTick = tick;
     }
 
-    public void OnExit(PlayerSnapshot player, long tick)
-    {
-        // no-op
-    }
+    public void OnExit(PlayerSnapshot player, long tick) { }
 }

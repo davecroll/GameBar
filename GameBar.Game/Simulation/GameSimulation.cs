@@ -23,6 +23,10 @@ public class GameSimulation : IGameSimulation
                 Y = 0,
                 VX = 0,
                 VY = 0,
+                Z = 0,
+                VZ = 0,
+                IsGrounded = true,
+                GroundY = 0,
                 MovementState = MovementState.Idle,
                 LastActivityTick = State.Tick,
                 MovementStateName = "Idle",
@@ -37,10 +41,7 @@ public class GameSimulation : IGameSimulation
         _latestInputs.Remove(playerId);
     }
 
-    public void EnqueueInput(string playerId, InputCommand input)
-    {
-        _latestInputs[playerId] = input;
-    }
+    public void EnqueueInput(string playerId, InputCommand input) => _latestInputs[playerId] = input;
 
     public void Update(TimeSpan dt)
     {
@@ -50,19 +51,43 @@ public class GameSimulation : IGameSimulation
         {
             _latestInputs.TryGetValue(playerId, out var input);
 
+            // Horizontal velocity from input
             if (input is null)
             {
-                player.VX = 0;
-                player.VY = 0;
+                player.VX = 0; player.VY = 0;
             }
             else
             {
-                (player.VX, player.VY) = InputProcessing.InputToVelocity(input);
+                (player.VX, player.VY) = InputProcessing.InputToHorizontalVelocity(input);
             }
 
+            // Jump trigger (edge) when grounded and Jump flag true
+            if (input?.Jump == true && player.IsGrounded)
+            {
+                player.IsGrounded = false;
+                player.VZ = InputProcessing.JumpVelocity;
+            }
+
+            // Apply gravity if airborne
+            if (!player.IsGrounded)
+            {
+                player.VZ -= InputProcessing.Gravity * dtSeconds;
+            }
+
+            // Integrate positions
             player.X += player.VX * dtSeconds;
             player.Y += player.VY * dtSeconds;
+            player.Z += player.VZ * dtSeconds;
 
+            // Ground collision (simple plane at GroundY=0)
+            if (player.Z <= player.GroundY)
+            {
+                player.Z = player.GroundY;
+                player.VZ = 0;
+                player.IsGrounded = true;
+            }
+
+            // Update movement FSM with current velocities and grounded state
             _movementFsm.Evaluate(player, State.Tick);
             _actionFsm.Evaluate(player, input, State.Tick);
         }

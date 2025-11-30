@@ -7,18 +7,19 @@ namespace GameBar.Game.Simulation;
 /// </summary>
 public static class InputProcessing
 {
-    public const float Speed = 75f; // units per second
+    public const float HorizontalSpeed = 75f; // horizontal units per second
+    public const float JumpVelocity = 300f; // initial vertical velocity for jump
+    public const float Gravity = 800f; // gravity acceleration (units/sec^2)
 
     /// <summary>
-    /// Converts directional input flags into a normalized velocity vector scaled by Speed.
+    /// Converts directional input flags into a normalized velocity vector scaled by HorizontalSpeed.
     /// </summary>
-    public static (float vx, float vy) InputToVelocity(InputCommand input)
+    public static (float vx, float vy) InputToHorizontalVelocity(InputCommand input)
     {
         float dx = 0, dy = 0;
-        if (input.Up) dy -= 1;
-        if (input.Down) dy += 1;
         if (input.Left) dx -= 1;
         if (input.Right) dx += 1;
+        // Up/Down ignored for platformer horizontal plane (could be ladder/climb later)
 
         var length = MathF.Sqrt(dx * dx + dy * dy);
         if (length > 0)
@@ -27,9 +28,6 @@ public static class InputProcessing
             dy /= length;
         }
 
-        return (dx * Speed, dy * Speed);
+        return (dx * HorizontalSpeed, dy * HorizontalSpeed);
     }
-
-    public static bool IsMoving((float vx, float vy) v)
-        => Math.Abs(v.vx) >= 0.0001f || Math.Abs(v.vy) >= 0.0001f;
 }
