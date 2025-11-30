@@ -124,9 +124,9 @@ public class GameClientService
     private void ApplyInputLocally(PlayerSnapshot player, InputCommand input, TimeSpan dt)
     {
         var dtSeconds = (float)dt.TotalSeconds;
-        var (vx, vy) = InputProcessing.InputToHorizontalVelocity(input);
+        var vx = InputProcessing.ComputeHorizontalVelocity(input, !player.IsGrounded);
         player.X += vx * dtSeconds;
-        player.Y += vy * dtSeconds;
+        // vertical prediction skipped (authoritative server physics)
     }
 
     // Load the ESM Pixi module once and call its init

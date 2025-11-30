@@ -11,12 +11,12 @@ public sealed class FallState : PlayerFsm.IPlayerState
     public bool CanEnter(PlayerSnapshot player)
     {
         // Enter when not grounded and vertical velocity <= 0 (descending or apex)
-        return !player.IsGrounded && player.VZ <= 0.0f;
+        return !player.IsGrounded && player.VY <= 0.0f;
     }
 
     public bool CanContinue(PlayerSnapshot player)
     {
-        return !player.IsGrounded && player.VZ <= 0.0f;
+        return !player.IsGrounded && player.VY <= 0.0f;
     }
 
     public void OnEnter(PlayerSnapshot player, long tick)
@@ -29,4 +29,3 @@ public sealed class FallState : PlayerFsm.IPlayerState
 
     public void OnExit(PlayerSnapshot player, long tick) { }
 }
-
