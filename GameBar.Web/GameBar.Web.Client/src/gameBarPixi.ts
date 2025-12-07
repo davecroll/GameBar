@@ -4,6 +4,14 @@
 let app: Application | null = null;
 let textures: Record<string, Texture> = {} as any;
 
+// New: .NET callback reference and ticker wiring
+let dotNetRef: any | null = null;
+let loopStarted = false;
+
+export function setDotNetRef(ref: any) {
+  dotNetRef = ref;
+}
+
 export async function init(container: HTMLElement) {
   if (app) return;
   app = new Application();
@@ -42,6 +50,27 @@ export async function render(args: { players: Array<{ id: string; x: number; y: 
 
     app.stage.addChild(sprite);
   }
+}
+
+export function startLoop() {
+  if (!app || !dotNetRef || loopStarted) return;
+  loopStarted = true;
+  app.ticker.add(async () => {
+    if (!dotNetRef) return;
+    try {
+      const players = await dotNetRef.invokeMethodAsync('GetRenderPlayersAsync');
+      await render({ players });
+    } catch (e) {
+      // swallow per-frame errors to avoid breaking the ticker
+      // console.error('Pixi loop error', e);
+    }
+  });
+}
+
+export function stopLoop() {
+  if (!app) return;
+  loopStarted = false;
+  app.ticker.stop();
 }
 
 export function destroy() {

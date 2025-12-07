@@ -21,11 +21,16 @@
         {
             await GameClient.InitializeAsync();
             await GameClient.InitPixiAsync(_gameContainer);
+            await GameClient.StartLoopAsync();
             await _focusDiv.FocusAsync();
         }
     }
 
-    private Task SendCurrentInputAsync() => GameClient.SendInputAsync(_up, _down, _left, _right, _attack, _jump);
+    private async Task SendCurrentInputAsync()
+    {
+        await GameClient.UpdateLocalInputStateAsync(_up, _down, _left, _right, _attack, _jump);
+        await GameClient.SendInputAsync(_up, _down, _left, _right, _attack, _jump);
+    }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
@@ -101,6 +106,7 @@
 
     public async ValueTask DisposeAsync()
     {
+        await GameClient.StopLoopAsync();
         await GameClient.DestroyAsync();
     }
 }

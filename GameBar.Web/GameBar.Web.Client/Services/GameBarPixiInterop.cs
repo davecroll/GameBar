@@ -108,4 +108,28 @@ public sealed class GameBarPixiInterop : IAsyncDisposable
     {
         await DestroyAsync();
     }
+
+    public async Task SetDotNetRefAsync(DotNetObjectReference<GameClientService> serviceRef)
+    {
+        if (_destroyed)
+            return;
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("setDotNetRef", serviceRef);
+    }
+
+    public async Task StartLoopAsync()
+    {
+        if (_destroyed)
+            return;
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("startLoop");
+    }
+
+    public async Task StopLoopAsync()
+    {
+        if (_destroyed)
+            return;
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("stopLoop");
+    }
 }
