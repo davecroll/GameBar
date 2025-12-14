@@ -20,11 +20,11 @@ public class GameSimulation : IGameSimulation
             {
                 PlayerId = playerId,
                 X = 25,
-                Y = 100, // ground line in view coordinates
+                Y = 100,
                 VX = 0,
                 VY = 0,
                 IsGrounded = false,
-                GroundY = 300,
+                GroundY = 400,
                 MovementState = MovementState.Idle,
                 LastActivityTick = State.Tick,
                 MovementStateName = "Idle",

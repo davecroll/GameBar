@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using GameBar.Game.Models;
-using GameBar.Game.Simulation;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;
@@ -16,27 +14,20 @@ public class GameClientService
     private readonly GameBarPixiInterop _pixi;
 
     private HubConnection? _connection;
-    private readonly List<InputCommand> _pendingInputs = new();
 
-    // Authoritative server snapshot cache (for reconciliation / remote players)
+    // Authoritative server snapshot cache
     private readonly Dictionary<string, PlayerSnapshot> _players = new();
 
     private long _nextInputSequence;
     private string? _localPlayerId;
 
     private long _latestServerTick;
-    private DateTimeOffset _lastSnapshotReceivedAt;
 
     private const int TickDurationMs = 50; // must match server
 
     private AnimationManifest? _manifest;
 
     private DotNetObjectReference<GameClientService>? _dotNetRef;
-
-    // Local client-side simulation for prediction
-    private readonly IGameSimulation _localSimulation = new GameSimulation();
-    private DateTimeOffset _lastLocalSimUpdate = DateTimeOffset.UtcNow;
-    private double _accumulatedMs;
 
     // Latest input state for local player (mirrors Game.razor flags)
     private bool _inputUp, _inputDown, _inputLeft, _inputRight, _inputAttack, _inputJump;
@@ -69,7 +60,8 @@ public class GameClientService
         // Load manifest
         try
         {
-            using var http = new HttpClient { BaseAddress = new Uri(_navigationManager.BaseUri) };
+            using var http = new HttpClient();
+            http.BaseAddress = new Uri(_navigationManager.BaseUri);
             var json = await http.GetStringAsync("animationManifest.json");
             _manifest = JsonSerializer.Deserialize<AnimationManifest>(json, new JsonSerializerOptions
             {
@@ -98,10 +90,6 @@ public class GameClientService
         await _connection.StartAsync();
 
         _localPlayerId = _connection.ConnectionId;
-        if (!string.IsNullOrEmpty(_localPlayerId))
-        {
-            _localSimulation.AddPlayer(_localPlayerId);
-        }
     }
 
     public async Task SendInputAsync(bool up, bool down, bool left, bool right, bool attack, bool jump)
@@ -119,7 +107,6 @@ public class GameClientService
             Attack = attack,
             Jump = jump
         };
-        _pendingInputs.Add(input);
         await _connection.SendAsync("SendInput", input);
     }
 
@@ -132,51 +119,6 @@ public class GameClientService
         }
 
         _latestServerTick = snapshot.ServerTick;
-        _lastSnapshotReceivedAt = DateTimeOffset.UtcNow;
-
-        // Reconcile local simulation with authoritative snapshot
-        if (_localPlayerId is not null && _players.TryGetValue(_localPlayerId, out var localAuthoritative))
-        {
-            // Snap local simulated player to server position/velocity to avoid long-term drift
-            if (_localSimulation.State.Players.TryGetValue(_localPlayerId, out var localSimPlayer))
-            {
-                localSimPlayer.X = localAuthoritative.X;
-                localSimPlayer.Y = localAuthoritative.Y;
-                localSimPlayer.VX = localAuthoritative.VX;
-                localSimPlayer.VY = localAuthoritative.VY;
-                localSimPlayer.IsGrounded = localAuthoritative.IsGrounded;
-                localSimPlayer.GroundY = localAuthoritative.GroundY;
-                localSimPlayer.MovementState = localAuthoritative.MovementState;
-                localSimPlayer.MovementStateName = localAuthoritative.MovementStateName;
-                localSimPlayer.MovementStateStartTick = localAuthoritative.MovementStateStartTick;
-                localSimPlayer.ActionStateName = localAuthoritative.ActionStateName;
-                localSimPlayer.ActionStateStartTick = localAuthoritative.ActionStateStartTick;
-            }
-            else
-            {
-                // If local sim does not have the player yet, add from snapshot
-                _localSimulation.AddPlayer(_localPlayerId);
-                if (_localSimulation.State.Players.TryGetValue(_localPlayerId, out var created))
-                {
-                    created.X = localAuthoritative.X;
-                    created.Y = localAuthoritative.Y;
-                    created.VX = localAuthoritative.VX;
-                    created.VY = localAuthoritative.VY;
-                    created.IsGrounded = localAuthoritative.IsGrounded;
-                    created.GroundY = localAuthoritative.GroundY;
-                    created.MovementState = localAuthoritative.MovementState;
-                    created.MovementStateName = localAuthoritative.MovementStateName;
-                    created.MovementStateStartTick = localAuthoritative.MovementStateStartTick;
-                    created.ActionStateName = localAuthoritative.ActionStateName;
-                    created.ActionStateStartTick = localAuthoritative.ActionStateStartTick;
-                }
-            }
-        }
-
-        if (_localPlayerId is not null && snapshot.LastProcessedInputSequenceByPlayer.TryGetValue(_localPlayerId, out var ackSequence))
-        {
-            _pendingInputs.RemoveAll(i => i.ClientInputSequence <= ackSequence);
-        }
     }
 
     // Load the ESM Pixi module once and call its init
@@ -191,7 +133,6 @@ public class GameClientService
 
     public async Task StartLoopAsync()
     {
-        _lastLocalSimUpdate = DateTimeOffset.UtcNow;
         await _pixi.StartLoopAsync();
     }
 
@@ -203,69 +144,28 @@ public class GameClientService
     [JSInvokable]
     public Task<PixiPlayer[]> GetRenderPlayersAsync()
     {
-        // Advance local simulation using a fixed-step loop to match server tick rate
-        var now = DateTimeOffset.UtcNow;
-        var dt = now - _lastLocalSimUpdate;
-        if (dt.TotalMilliseconds < 0)
-        {
-            dt = TimeSpan.Zero;
-        }
-        _lastLocalSimUpdate = now;
-
-        _accumulatedMs += dt.TotalMilliseconds;
-        var fixedStepMs = _manifest?.TickDurationMs ?? TickDurationMs; // typically 50ms
-
-        // Enqueue latest input snapshot for local player before stepping
-        if (!string.IsNullOrEmpty(_localPlayerId))
-        {
-            var input = new InputCommand
-            {
-                PlayerId = _localPlayerId,
-                Up = _inputUp,
-                Down = _inputDown,
-                Left = _inputLeft,
-                Right = _inputRight,
-                Attack = _inputAttack,
-                Jump = _inputJump
-            };
-            _localSimulation.EnqueueInput(_localPlayerId, input);
-        }
-
-        while (_accumulatedMs >= fixedStepMs)
-        {
-            _localSimulation.Update(TimeSpan.FromMilliseconds(fixedStepMs));
-            _accumulatedMs -= fixedStepMs;
-        }
-
-        var currentTick = _localSimulation.State.Tick;
+        // Render purely from latest authoritative server snapshot; no client-side prediction.
         var manifest = _manifest ?? AnimationManifest.Default;
+        var currentTick = _latestServerTick;
 
-        // Use local simulation state for local player, server snapshots for others
         var renderPlayers = new List<PixiPlayer>();
 
         foreach (var kvp in _players)
         {
             var id = kvp.Key;
-            var serverPlayer = kvp.Value;
-            PlayerSnapshot source;
-
-            if (id == _localPlayerId && _localSimulation.State.Players.TryGetValue(id, out var localSimPlayer))
-            {
-                source = localSimPlayer;
-            }
-            else
-            {
-                source = serverPlayer;
-            }
+            var source = kvp.Value;
 
             var stateName = string.IsNullOrEmpty(source.ActionStateName) ? source.MovementStateName : source.ActionStateName!;
-            var startTick = string.IsNullOrEmpty(source.ActionStateName) ? source.MovementStateStartTick : source.ActionStateStartTick ?? source.MovementStateStartTick;
             if (!manifest.States.TryGetValue(stateName, out var meta))
             {
                 meta = manifest.States["Idle"];
             }
 
-            var stepTicks = Math.Max(1, meta.FrameDurationMs / manifest.TickDurationMs);
+            var startTick = string.IsNullOrEmpty(source.ActionStateName)
+                ? source.MovementStateStartTick
+                : source.ActionStateStartTick ?? source.MovementStateStartTick;
+
+            var stepTicks = Math.Max(1, meta.FrameDurationMs / manifest.ClientTickDurationMs);
             var frames = meta.FrameCount;
             var deltaTicks = currentTick - startTick;
             var frameIndex = 0;
@@ -289,12 +189,12 @@ public class GameClientService
 
     private sealed class AnimationManifest
     {
-        public int TickDurationMs { get; set; } = 50;
+        public int ClientTickDurationMs { get; set; } = 50;
         public Dictionary<string, AnimationMeta> States { get; set; } = new();
 
         public static AnimationManifest Default => new AnimationManifest
         {
-            TickDurationMs = 50,
+            ClientTickDurationMs = 50,
             States = new Dictionary<string, AnimationMeta>
             {
                 { "Idle", new AnimationMeta { AssetKey = "idle", FrameCount = 10, FrameWidth = 48, FrameHeight = 48, FrameDurationMs = 95, Loop = true } },
