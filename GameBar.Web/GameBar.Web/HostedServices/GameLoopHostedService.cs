@@ -9,7 +9,7 @@ public class GameLoopHostedService : IHostedService
     private CancellationTokenSource? _cts;
     private Task? _loopTask;
 
-    private static readonly TimeSpan TickInterval = TimeSpan.FromMilliseconds(50); // 20 ticks per second
+    private static readonly TimeSpan TickInterval = TimeSpan.FromMilliseconds(25); // 40 ticks per second
 
     public GameLoopHostedService(GameSessionManager gameSessionManager, ILogger<GameLoopHostedService> logger)
     {

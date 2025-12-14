@@ -23,7 +23,8 @@ public class GameClientService
 
     private long _latestServerTick;
 
-    private const int TickDurationMs = 50; // must match server
+    // Server simulation tick duration, in ms. Must match server's fixed step.
+    private const int ServerTickDurationMs = 25;
 
     private AnimationManifest? _manifest;
 
@@ -146,34 +147,38 @@ public class GameClientService
     {
         // Render purely from latest authoritative server snapshot; no client-side prediction.
         var manifest = _manifest ?? AnimationManifest.Default;
-        var currentTick = _latestServerTick;
+
+        // Convert authoritative server tick into elapsed milliseconds on the server timeline.
+        var currentServerTimeMs = _latestServerTick * ServerTickDurationMs;
 
         var renderPlayers = new List<PixiPlayer>();
 
-        foreach (var kvp in _players)
+        foreach (var (id, source) in _players)
         {
-            var id = kvp.Key;
-            var source = kvp.Value;
+            var stateName = string.IsNullOrEmpty(source.ActionStateName)
+                ? source.MovementStateName
+                : source.ActionStateName!;
 
-            var stateName = string.IsNullOrEmpty(source.ActionStateName) ? source.MovementStateName : source.ActionStateName!;
             if (!manifest.States.TryGetValue(stateName, out var meta))
             {
                 meta = manifest.States["Idle"];
             }
 
+            // Use the appropriate state start tick from the authoritative snapshot.
             var startTick = string.IsNullOrEmpty(source.ActionStateName)
                 ? source.MovementStateStartTick
                 : source.ActionStateStartTick ?? source.MovementStateStartTick;
 
-            var stepTicks = Math.Max(1, meta.FrameDurationMs / manifest.ClientTickDurationMs);
-            var frames = meta.FrameCount;
-            var deltaTicks = currentTick - startTick;
-            var frameIndex = 0;
-            if (deltaTicks >= 0)
-            {
-                var steps = (int)(deltaTicks / stepTicks);
-                frameIndex = meta.Loop ? steps % frames : Math.Min(frames - 1, steps);
-            }
+            var startTimeMs = startTick * ServerTickDurationMs;
+            var elapsedMs = Math.Max(0, currentServerTimeMs - startTimeMs);
+
+            var frameDurationMs = Math.Max(1, meta.FrameDurationMs);
+            var frames = Math.Max(1, meta.FrameCount);
+
+            var steps = (int)(elapsedMs / frameDurationMs);
+            var frameIndex = meta.Loop
+                ? steps % frames
+                : Math.Min(frames - 1, steps);
 
             renderPlayers.Add(new PixiPlayer(id, source.X, source.Y, frameIndex, meta.AssetKey, meta.FrameWidth, meta.FrameHeight));
         }
@@ -189,12 +194,12 @@ public class GameClientService
 
     private sealed class AnimationManifest
     {
-        public int ClientTickDurationMs { get; set; } = 50;
+        // Per-state animations specify their own FrameDurationMs; this property remains as a
+        // generic client-side default but does not drive frame timing directly.
         public Dictionary<string, AnimationMeta> States { get; set; } = new();
 
         public static AnimationManifest Default => new AnimationManifest
         {
-            ClientTickDurationMs = 50,
             States = new Dictionary<string, AnimationMeta>
             {
                 { "Idle", new AnimationMeta { AssetKey = "idle", FrameCount = 10, FrameWidth = 48, FrameHeight = 48, FrameDurationMs = 95, Loop = true } },
