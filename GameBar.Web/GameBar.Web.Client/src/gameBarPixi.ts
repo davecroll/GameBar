@@ -8,6 +8,9 @@ let textures: Record<string, Texture> = {} as any;
 let dotNetRef: any | null = null;
 let loopStarted = false;
 
+// Cache for per-player sprites so we don't recreate/destroy every frame
+const playerSprites: Map<string, Sprite> = new Map();
+
 export function setDotNetRef(ref: any) {
   dotNetRef = ref;
 }
@@ -29,10 +32,12 @@ export async function render(args: { players: Array<{ id: string; x: number; y: 
   if (!app) return;
   const { players } = args;
 
-  // Clear stage
-  app.stage.removeChildren();
+  const seenIds = new Set<string>();
 
   for (const p of players) {
+    seenIds.add(p.id);
+
+    let sprite = playerSprites.get(p.id);
     const baseTex = textures[p.anim] ?? textures['idle'];
     if (!baseTex) continue;
 
@@ -43,12 +48,26 @@ export async function render(args: { players: Array<{ id: string; x: number; y: 
     const rect = new Rectangle(x, y, p.frameWidth, p.frameHeight);
     const frame = new Texture({ source: baseTex.source, frame: rect });
 
-    const sprite = new Sprite(frame);
+    if (!sprite) {
+      sprite = new Sprite(frame);
+      sprite.anchor.set(0.5, 0.5);
+      playerSprites.set(p.id, sprite);
+      app.stage.addChild(sprite);
+    } else {
+      // Reuse existing sprite and just update its texture
+      sprite.texture = frame;
+    }
+
     sprite.x = p.x;
     sprite.y = p.y;
-    sprite.anchor.set(0.5, 0.5);
+    sprite.visible = true;
+  }
 
-    app.stage.addChild(sprite);
+  // Hide/remove sprites for players that no longer exist in the snapshot
+  for (const [id, sprite] of playerSprites.entries()) {
+    if (!seenIds.has(id)) {
+      sprite.visible = false;
+    }
   }
 }
 
@@ -75,6 +94,7 @@ export function stopLoop() {
 
 export function destroy() {
   if (!app) return;
+  playerSprites.clear();
   app.destroy(true);
   app = null;
 }
