@@ -21,14 +21,12 @@
         {
             await GameClient.InitializeAsync();
             await GameClient.InitPixiAsync(_gameContainer);
-            await GameClient.StartLoopAsync();
             await _focusDiv.FocusAsync();
         }
     }
 
     private async Task SendCurrentInputAsync()
     {
-        await GameClient.UpdateLocalInputStateAsync(_up, _down, _left, _right, _attack, _jump);
         await GameClient.SendInputAsync(_up, _down, _left, _right, _attack, _jump);
     }
 

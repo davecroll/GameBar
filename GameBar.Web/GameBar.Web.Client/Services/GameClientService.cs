@@ -30,25 +30,10 @@ public class GameClientService
 
     private DotNetObjectReference<GameClientService>? _dotNetRef;
 
-    // Latest input state for local player (mirrors Game.razor flags)
-    private bool _inputUp, _inputDown, _inputLeft, _inputRight, _inputAttack, _inputJump;
-
     public GameClientService(NavigationManager navigationManager, GameBarPixiInterop pixi)
     {
         _navigationManager = navigationManager;
         _pixi = pixi;
-    }
-
-    // Called by Game.razor when input state changes
-    public Task UpdateLocalInputStateAsync(bool up, bool down, bool left, bool right, bool attack, bool jump)
-    {
-        _inputUp = up;
-        _inputDown = down;
-        _inputLeft = left;
-        _inputRight = right;
-        _inputAttack = attack;
-        _inputJump = jump;
-        return Task.CompletedTask;
     }
 
     public async Task InitializeAsync()
@@ -130,10 +115,7 @@ public class GameClientService
 
         _dotNetRef ??= DotNetObjectReference.Create(this);
         await _pixi.SetDotNetRefAsync(_dotNetRef);
-    }
 
-    public async Task StartLoopAsync()
-    {
         await _pixi.StartLoopAsync();
     }
 
