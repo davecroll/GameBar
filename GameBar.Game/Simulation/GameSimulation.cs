@@ -12,6 +12,8 @@ public class GameSimulation : IGameSimulation
     private readonly MovementStateMachine _movementFsm = new();
     private readonly ActionStateMachine _actionFsm = new(new[] { new PlayerFsm.Action.JabState(50, 10, 80) });
 
+    private const float GroundY = 400;
+
     public void AddPlayer(string playerId)
     {
         if (!State.Players.ContainsKey(playerId))
@@ -24,7 +26,6 @@ public class GameSimulation : IGameSimulation
                 VX = 0,
                 VY = 0,
                 IsGrounded = false,
-                GroundY = 400,
                 MovementState = MovementState.Idle,
                 LastActivityTick = State.Tick,
                 MovementStateName = "Idle",
@@ -69,10 +70,10 @@ public class GameSimulation : IGameSimulation
             player.X += player.VX * dtSeconds;
             player.Y += player.VY * dtSeconds;
 
-            // Ground collision at GroundY (300)
-            if (player.Y >= player.GroundY)
+            // Ground collision at GroundY
+            if (player.Y >= GroundY)
             {
-                player.Y = player.GroundY;
+                player.Y = GroundY;
                 player.VY = 0;
                 player.IsGrounded = true;
             }

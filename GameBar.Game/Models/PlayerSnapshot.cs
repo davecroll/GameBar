@@ -18,7 +18,6 @@ public class PlayerSnapshot
     public float VX { get; set; }             // horizontal velocity
     public float VY { get; set; }             // vertical velocity
     public bool IsGrounded { get; set; } = true; // grounded flag for jump/fall logic
-    public float GroundY { get; set; } = 0f;  // baseline ground height (platform support later)
     // ...existing code...
     public MovementState MovementState { get; set; } = MovementState.Unknown;
     public long LastActivityTick { get; set; }
