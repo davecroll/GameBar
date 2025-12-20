@@ -1,8 +1,13 @@
 ﻿import {Application, Assets, Sprite, Texture, Rectangle} from 'pixi.js';
+import { Graphics } from 'pixi.js';
 
 // Simple PixiJS wrapper exposing init/render/destroy as ES module exports
 let app: Application | null = null;
 let textures: Record<string, Texture> = {} as any;
+
+// Debug overlay
+let debugGraphics: Graphics | null = null;
+let debugLineY: number | null = 400;
 
 // New: .NET callback reference and ticker wiring
 let dotNetRef: any | null = null;
@@ -10,6 +15,37 @@ let loopStarted = false;
 
 // Cache for per-player sprites so we don't recreate/destroy every frame
 const playerSprites: Map<string, Sprite> = new Map();
+
+function ensureDebugOverlay() {
+  if (!app) return;
+  if (!debugGraphics) {
+    debugGraphics = new Graphics();
+    // Keep it in the background: insert at index 0 so sprites render above it.
+    app.stage.addChildAt(debugGraphics, 0);
+  }
+}
+
+function redrawDebugOverlay() {
+  if (!app) return;
+  if (debugLineY == null) {
+    if (debugGraphics) debugGraphics.clear();
+    return;
+  }
+  ensureDebugOverlay();
+  if (!debugGraphics) return;
+
+  const y = debugLineY;
+  // Clear and redraw. Use device pixels in world coords.
+  debugGraphics.clear();
+  debugGraphics
+    .moveTo(0, y)
+    .lineTo(app.renderer.width, y)
+    .stroke({ color: 0xffffff, width: 1, alpha: 0.4 });
+
+  // Keep it behind everything else even if other things get added later.
+  // (If you start using multiple layers/containers, consider a dedicated background container.)
+  app.stage.setChildIndex(debugGraphics, 0);
+}
 
 export function setDotNetRef(ref: any) {
   dotNetRef = ref;
@@ -21,11 +57,22 @@ export async function init(container: HTMLElement) {
   // Resize to container ensures canvas fits and resizes
   await app.init({ resizeTo: container, background: 0x000000 });
   container.appendChild(app.canvas);
+
+  // Draw the debug line once, and again on resize.
+  redrawDebugOverlay();
+  app.renderer.on('resize', () => redrawDebugOverlay());
 }
 
 export async function loadAsset(key: string, url: string) {
   if (!app) return;
   textures[key] = await Assets.load(url) as Texture;
+}
+
+// Call from .NET/Blazor if you want to move or hide the line at runtime.
+// Set y to null to hide.
+export function setDebugLineY(y: number | null) {
+  debugLineY = y;
+  redrawDebugOverlay();
 }
 
 export async function render(args: { players: Array<{ id: string; x: number; y: number; frameIndex: number; anim: string; frameWidth: number; frameHeight: number }> }) {
@@ -69,6 +116,9 @@ export async function render(args: { players: Array<{ id: string; x: number; y: 
       sprite.visible = false;
     }
   }
+
+  // Re-assert debug overlay ordering/drawing (keeps it behind sprites).
+  redrawDebugOverlay();
 }
 
 export function startLoop() {
@@ -95,6 +145,8 @@ export function stopLoop() {
 export function destroy() {
   if (!app) return;
   playerSprites.clear();
+  debugGraphics?.destroy();
+  debugGraphics = null;
   app.destroy(true);
   app = null;
 }
