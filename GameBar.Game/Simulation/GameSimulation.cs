@@ -16,21 +16,20 @@ public class GameSimulation : IGameSimulation
 
     public void AddPlayer(string playerId)
     {
-        if (!State.Players.ContainsKey(playerId))
+        if (State.Players.ContainsKey(playerId)) return;
+
+        State.Players[playerId] = new PlayerSnapshot
         {
-            State.Players[playerId] = new PlayerSnapshot
-            {
-                PlayerId = playerId,
-                X = 25,
-                Y = 100,
-                VX = 0,
-                VY = 0,
-                IsGrounded = false,
-                LastActivityTick = State.Tick,
-                MovementStateName = "Idle",
-                MovementStateStartTick = State.Tick
-            };
-        }
+            PlayerId = playerId,
+            X = 25,
+            Y = 100,
+            VX = 0,
+            VY = 0,
+            IsGrounded = false,
+            LastActivityTick = State.Tick,
+            MovementStateName = "Idle",
+            MovementStateStartTick = State.Tick
+        };
     }
 
     public void RemovePlayer(string playerId)
