@@ -10,7 +10,7 @@ public class GameSimulation : IGameSimulation
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
 
     private readonly MovementStateMachine _movementFsm = new();
-    private readonly ActionStateMachine _actionFsm = new(new[] { new PlayerFsm.Action.JabState(50, 10, 80) });
+    private readonly ActionStateMachine _actionFsm = new();
 
     private const float GroundY = 400;
 

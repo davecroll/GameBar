@@ -8,10 +8,16 @@ namespace GameBar.Game.Simulation.PlayerFsm;
 /// </summary>
 public sealed class MovementStateMachine
 {
-    private readonly IPlayerState[] _states = [ new IdleState(), new RunState(), new FallState(), new JumpState() ];
-
     private const int DebounceTicks = 1; // quicker state transitions for jump/fall responsiveness
     private readonly Dictionary<string, (string desiredName, long sinceTick)> _candidates = new();
+    private readonly List<IPlayerState> _states;
+
+    public MovementStateMachine()
+    {
+        _states = new List<IPlayerState> { new IdleState(), new RunState(), new FallState(), new JumpState() }
+            .OrderByDescending(s => s.Priority)
+            .ToList();
+    }
 
     public void Evaluate(PlayerSnapshot player, long tick)
     {
@@ -23,10 +29,7 @@ public sealed class MovementStateMachine
         }
 
         // Determine desired state from available states based on CanEnter
-        IPlayerState desired = _states
-            .Where(s => s.CanEnter(player))
-            .OrderByDescending(s => s.Priority)
-            .FirstOrDefault() ?? _states[0];
+        IPlayerState desired = _states.FirstOrDefault(s => s.CanEnter(player)) ?? _states[0];
 
         if (!_candidates.TryGetValue(player.PlayerId, out var cand) || cand.desiredName != desired.Name)
         {
