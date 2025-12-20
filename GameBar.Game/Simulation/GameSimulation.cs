@@ -26,7 +26,6 @@ public class GameSimulation : IGameSimulation
                 VX = 0,
                 VY = 0,
                 IsGrounded = false,
-                MovementState = MovementState.Idle,
                 LastActivityTick = State.Tick,
                 MovementStateName = "Idle",
                 MovementStateStartTick = State.Tick

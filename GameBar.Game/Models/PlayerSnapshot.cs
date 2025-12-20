@@ -19,7 +19,6 @@ public class PlayerSnapshot
     public float VY { get; set; }             // vertical velocity
     public bool IsGrounded { get; set; } = true; // grounded flag for jump/fall logic
     // ...existing code...
-    public MovementState MovementState { get; set; } = MovementState.Unknown;
     public long LastActivityTick { get; set; }
     public string MovementStateName { get; set; } = string.Empty;
     public long MovementStateStartTick { get; set; }

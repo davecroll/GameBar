@@ -17,7 +17,6 @@ public sealed class IdleState : PlayerFsm.IPlayerState
 
     public void OnEnter(PlayerSnapshot player, long tick)
     {
-        player.MovementState = MovementState.Idle;
         player.MovementStateName = Name;
         player.MovementStateStartTick = tick;
         player.LastActivityTick = tick;

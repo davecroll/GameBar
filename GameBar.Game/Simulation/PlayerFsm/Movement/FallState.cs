@@ -13,7 +13,6 @@ public sealed class FallState : PlayerFsm.IPlayerState
 
     public void OnEnter(PlayerSnapshot player, long tick)
     {
-        player.MovementState = MovementState.Fall;
         player.MovementStateName = Name;
         player.MovementStateStartTick = tick;
         player.LastActivityTick = tick;

@@ -17,7 +17,6 @@ public sealed class RunState : PlayerFsm.IPlayerState
 
     public void OnEnter(PlayerSnapshot player, long tick)
     {
-        player.MovementState = MovementState.Running;
         player.MovementStateName = Name;
         player.MovementStateStartTick = tick;
         player.LastActivityTick = tick;

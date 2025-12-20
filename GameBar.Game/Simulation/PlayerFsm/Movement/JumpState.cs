@@ -13,7 +13,6 @@ public sealed class JumpState : PlayerFsm.IPlayerState
 
     public void OnEnter(PlayerSnapshot player, long tick)
     {
-        player.MovementState = MovementState.Jump;
         player.MovementStateName = Name;
         player.MovementStateStartTick = tick;
         player.LastActivityTick = tick;
