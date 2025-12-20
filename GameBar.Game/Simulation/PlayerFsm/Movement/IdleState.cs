@@ -2,7 +2,7 @@
 
 namespace GameBar.Game.Simulation.PlayerFsm.Movement;
 
-public sealed class IdleState : PlayerFsm.IPlayerState
+public sealed class IdleState : IPlayerState
 {
     public string Name => "Idle";
     public string Layer => "Movement";

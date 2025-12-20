@@ -2,7 +2,7 @@
 
 namespace GameBar.Game.Simulation.PlayerFsm.Movement;
 
-public sealed class RunState : PlayerFsm.IPlayerState
+public sealed class RunState : IPlayerState
 {
     public string Name => "Run";
     public string Layer => "Movement";
