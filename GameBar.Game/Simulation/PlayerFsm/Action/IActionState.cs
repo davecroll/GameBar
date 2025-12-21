@@ -21,4 +21,6 @@ public interface IActionState : IPlayerState
     /// Whether this action can be interrupted by another higher-priority action.
     /// </summary>
     bool Interruptible { get; }
+    
+    BoundingBox? Hitbox => null;
 }

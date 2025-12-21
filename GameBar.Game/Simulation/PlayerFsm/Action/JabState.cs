@@ -11,6 +11,8 @@ public sealed class JabState : IActionState
     public int DurationTicks { get; }
     public bool Interruptible => false; // simple non-interruptible jab
 
+    public BoundingBox? Hitbox => new BoundingBox(0, 0, 48, 48);
+
     private readonly int _tickDurationMs;
     private readonly int _frameCount;
     private readonly int _frameDurationMs;

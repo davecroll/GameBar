@@ -54,6 +54,7 @@ public sealed class MovementStateMachine
 
             // Enter desired
             desired.OnEnter(player, tick);
+            player.MovementState = desired;
         }
     }
 }

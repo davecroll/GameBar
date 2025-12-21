@@ -7,6 +7,7 @@ public sealed class IdleState : IPlayerState
     public string Name => "Idle";
     public string Layer => "Movement";
     public int Priority => 5;
+    public BoundingBox? Hurtbox => new(0, 0, 48, 48);
 
     public bool CanEnter(PlayerSnapshot player)
     {

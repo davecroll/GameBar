@@ -11,6 +11,7 @@ public interface IPlayerState
     string Name { get; }
     string Layer { get; } // e.g., "Movement"
     int Priority { get; } // higher value wins
+    public BoundingBox? Hurtbox => null;
 
     bool CanEnter(PlayerSnapshot player);
     bool CanContinue(PlayerSnapshot player);

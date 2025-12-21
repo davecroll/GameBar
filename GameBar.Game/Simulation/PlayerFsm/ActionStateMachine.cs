@@ -56,6 +56,7 @@ public sealed class ActionStateMachine
         if (sustained >= DebounceTicks)
         {
             desired.OnEnter(player, tick);
+            player.ActionState = desired;
         }
     }
 }

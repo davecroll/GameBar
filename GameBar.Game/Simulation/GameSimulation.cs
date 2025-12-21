@@ -94,7 +94,43 @@ public class GameSimulation : IGameSimulation
             _actionFsm.Evaluate(player, input, State.Tick);
         }
 
+        DetectDamage();
+
         State.Tick++;
         State.LastUpdated = DateTimeOffset.UtcNow;
+    }
+
+    public void DetectDamage()
+    {
+        Dictionary<string, BoundingBox?> hurtboxes = new();
+        foreach (var (playerId, player) in State.Players.ToArray())
+        {
+            // get the hurtbox for this player, add it to the hurtbox list
+            hurtboxes.Add(playerId, player.Hurtbox());
+        }
+
+        Dictionary<string, BoundingBox?> hitboxes = new();
+        foreach (var (playerId, player) in State.Players.ToArray())
+        {
+            // get the hitboxes for this player, add it to the hitboxes list
+            hitboxes.Add(playerId, player.Hitbox());
+        }
+
+        // check each hitbox against each hurtbox
+        foreach (var (attackerId, hitbox) in hitboxes)
+        {
+            if (hitbox is null) continue;
+            foreach (var (defenderId, hurtbox) in hurtboxes)
+            {
+                if (attackerId == defenderId) continue; // skip self
+
+                if (hurtbox is null) continue;
+
+                if (hitbox.Value.Intersects(hurtbox.Value))
+                {
+                    Console.WriteLine($"{attackerId} hit {hitbox.Value}");
+                }
+            }
+        }
     }
 }
