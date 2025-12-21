@@ -12,9 +12,9 @@ public sealed class MovementStateMachine
     private readonly Dictionary<string, (string desiredName, long sinceTick)> _candidates = new();
     private readonly List<IPlayerState> _states;
 
-    public MovementStateMachine()
+    public MovementStateMachine(List<IPlayerState> states)
     {
-        _states = new List<IPlayerState> { new IdleState(), new RunState(), new FallState(), new JumpState() }
+        _states = states
             .OrderByDescending(s => s.Priority)
             .ToList();
     }

@@ -9,9 +9,9 @@ public sealed class ActionStateMachine
     private readonly Dictionary<string, (string desiredName, long sinceTick)> _candidates = new();
     private readonly List<IActionState> _states;
 
-    public ActionStateMachine()
+    public ActionStateMachine(List<IActionState> states)
     {
-        _states = new List<IActionState> { new JabState() }
+        _states = states
             .OrderByDescending(s => s.Priority)
             .ToList();
     }

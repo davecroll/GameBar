@@ -1,5 +1,6 @@
 ﻿using GameBar.Game.Models;
 using GameBar.Game.Simulation.PlayerFsm;
+using GameBar.Game.Simulation.PlayerFsm.Action;
 
 namespace GameBar.Game.Simulation;
 
@@ -9,10 +10,23 @@ public class GameSimulation : IGameSimulation
 
     private readonly Dictionary<string, InputCommand> _latestInputs = new();
 
-    private readonly MovementStateMachine _movementFsm = new();
-    private readonly ActionStateMachine _actionFsm = new();
+    private readonly MovementStateMachine _movementFsm;
+    private readonly ActionStateMachine _actionFsm;
 
     private const float GroundY = 400;
+
+    public GameSimulation(Dictionary<string, IPlayerState> playerStates)
+    {
+        // new List<IActionState> { new IdleState(), new RunState(), new FallState(), new JumpState() }
+        var movementStates = playerStates.Values.Where(ps => ps.Layer == "Movement").ToList();
+        _movementFsm = new MovementStateMachine(movementStates);
+
+        // new List<IActionState> { new JabState() }
+        var actionStates = playerStates.Values.Where(ps => ps.Layer == "Action")
+            .OfType<IActionState>()
+            .ToList();
+        _actionFsm = new ActionStateMachine(actionStates);
+    }
 
     public void AddPlayer(string playerId)
     {

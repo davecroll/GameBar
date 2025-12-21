@@ -15,7 +15,19 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<IGameSimulation, GameSimulation>();
+builder.Services.AddSingleton<IGameSimulation, GameSimulation>(_ =>
+{
+    var playerStates = new Dictionary<string, GameBar.Game.Simulation.PlayerFsm.IPlayerState>
+    {
+        { "Idle", new GameBar.Game.Simulation.PlayerFsm.Movement.IdleState() },
+        { "Run", new GameBar.Game.Simulation.PlayerFsm.Movement.RunState() },
+        { "Fall", new GameBar.Game.Simulation.PlayerFsm.Movement.FallState() },
+        { "Jump", new GameBar.Game.Simulation.PlayerFsm.Movement.JumpState() },
+        { "Jab", new GameBar.Game.Simulation.PlayerFsm.Action.JabState() }
+    };
+
+    return new GameSimulation(playerStates);
+});
 builder.Services.AddSingleton<GameSessionManager>();
 builder.Services.AddHostedService<GameLoopHostedService>();
 
