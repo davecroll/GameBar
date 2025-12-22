@@ -36,31 +36,23 @@ public sealed class Player
     public BoundingBox? Hurtbox(long currentTick)
     {
         var relativeBoundingBox = MovementState?.Hurtbox(this, currentTick);
-        if (relativeBoundingBox is not null)
-        {
-            return new BoundingBox(
-                (int)(X + relativeBoundingBox.Value.X),
-                (int)(Y + relativeBoundingBox.Value.Y),
-                relativeBoundingBox.Value.Width,
-                relativeBoundingBox.Value.Height);
-        }
-
-        return null;
+        if (relativeBoundingBox is null) return null;
+        return new BoundingBox(
+            (int)(X + relativeBoundingBox.Value.X),
+            (int)(Y + relativeBoundingBox.Value.Y),
+            relativeBoundingBox.Value.Width,
+            relativeBoundingBox.Value.Height);
     }
 
     public BoundingBox? Hitbox()
     {
         var relativeBoundingBox = ActionState?.Hitbox;
-        if (relativeBoundingBox is not null)
-        {
-            return new BoundingBox(
-                (int)(X + relativeBoundingBox.Value.X),
-                (int)(Y + relativeBoundingBox.Value.Y),
-                relativeBoundingBox.Value.Width,
-                relativeBoundingBox.Value.Height);
-        }
-
-        return null;
+        if (relativeBoundingBox is null) return null;
+        return new BoundingBox(
+            (int)(X + relativeBoundingBox.Value.X),
+            (int)(Y + relativeBoundingBox.Value.Y),
+            relativeBoundingBox.Value.Width,
+            relativeBoundingBox.Value.Height);
     }
 
     public PlayerSnapshot ToSnapshot()
@@ -81,4 +73,3 @@ public sealed class Player
         };
     }
 }
-

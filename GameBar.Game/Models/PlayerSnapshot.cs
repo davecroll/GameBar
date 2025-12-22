@@ -1,15 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace GameBar.Game.Models;
-
-public enum MovementState
-{
-    Unknown = 0,
-    Idle = 1,
-    Running = 2,
-    Jump = 3,
-    Fall = 4
-}
+﻿namespace GameBar.Game.Models;
 
 public class PlayerSnapshot
 {
@@ -26,9 +15,4 @@ public class PlayerSnapshot
     public long MovementStateStartTick { get; set; }
     public string? ActionStateName { get; set; }
     public long? ActionStateStartTick { get; set; }
-
-    // This type is intended for transport/serialization.
-    // Keep it reference-free and deterministic.
-    [JsonIgnore]
-    public bool HasActiveAction => !string.IsNullOrEmpty(ActionStateName) && ActionStateStartTick is not null;
 }
