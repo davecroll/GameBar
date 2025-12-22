@@ -19,7 +19,7 @@ public sealed class MovementStateMachine
             .ToList();
     }
 
-    public void Evaluate(PlayerSnapshot player, long tick)
+    public void Evaluate(Player player, long tick)
     {
         // Initialize name on first evaluation
         if (string.IsNullOrEmpty(player.MovementStateName))

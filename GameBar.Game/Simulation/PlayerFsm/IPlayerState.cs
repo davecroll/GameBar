@@ -11,11 +11,12 @@ public interface IPlayerState
     string Name { get; }
     string Layer { get; } // e.g., "Movement"
     int Priority { get; } // higher value wins
-    public BoundingBox? Hurtbox => null;
 
-    bool CanEnter(PlayerSnapshot player);
-    bool CanContinue(PlayerSnapshot player);
+    BoundingBox? Hurtbox(Player player, long currentTick) => null;
 
-    void OnEnter(PlayerSnapshot player, long tick);
-    void OnExit(PlayerSnapshot player, long tick);
+    bool CanEnter(Player player);
+    bool CanContinue(Player player);
+
+    void OnEnter(Player player, long tick);
+    void OnExit(Player player, long tick);
 }

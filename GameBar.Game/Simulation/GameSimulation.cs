@@ -17,11 +17,9 @@ public class GameSimulation : IGameSimulation
 
     public GameSimulation(Dictionary<string, IPlayerState> playerStates)
     {
-        // new List<IActionState> { new IdleState(), new RunState(), new FallState(), new JumpState() }
         var movementStates = playerStates.Values.Where(ps => ps.Layer == "Movement").ToList();
         _movementFsm = new MovementStateMachine(movementStates);
 
-        // new List<IActionState> { new JabState() }
         var actionStates = playerStates.Values.Where(ps => ps.Layer == "Action")
             .OfType<IActionState>()
             .ToList();
@@ -32,7 +30,7 @@ public class GameSimulation : IGameSimulation
     {
         if (State.Players.ContainsKey(playerId)) return;
 
-        State.Players[playerId] = new PlayerSnapshot
+        State.Players[playerId] = new Player
         {
             PlayerId = playerId,
             X = 25,
@@ -94,25 +92,23 @@ public class GameSimulation : IGameSimulation
             _actionFsm.Evaluate(player, input, State.Tick);
         }
 
-        DetectDamage();
+        DetectDamage(State.Tick);
 
         State.Tick++;
         State.LastUpdated = DateTimeOffset.UtcNow;
     }
 
-    public void DetectDamage()
+    public void DetectDamage(long currentTick)
     {
         Dictionary<string, BoundingBox?> hurtboxes = new();
         foreach (var (playerId, player) in State.Players.ToArray())
         {
-            // get the hurtbox for this player, add it to the hurtbox list
-            hurtboxes.Add(playerId, player.Hurtbox());
+            hurtboxes.Add(playerId, player.Hurtbox(currentTick));
         }
 
         Dictionary<string, BoundingBox?> hitboxes = new();
         foreach (var (playerId, player) in State.Players.ToArray())
         {
-            // get the hitboxes for this player, add it to the hitboxes list
             hitboxes.Add(playerId, player.Hitbox());
         }
 
@@ -128,7 +124,7 @@ public class GameSimulation : IGameSimulation
 
                 if (hitbox.Value.Intersects(hurtbox.Value))
                 {
-                    Console.WriteLine($"{attackerId} hit {hitbox.Value}");
+                    Console.WriteLine($"Attacker ({attackerId}) hit player ({defenderId})");
                 }
             }
         }

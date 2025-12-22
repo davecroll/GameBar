@@ -16,7 +16,7 @@ public sealed class ActionStateMachine
             .ToList();
     }
 
-    public void Evaluate(PlayerSnapshot player, InputCommand? input, long tick)
+    public void Evaluate(Player player, InputCommand? input, long tick)
     {
         // If action active, check duration completion
         if (!string.IsNullOrEmpty(player.ActionStateName))
@@ -43,6 +43,7 @@ public sealed class ActionStateMachine
         var desired = _states.FirstOrDefault(s => s.CanTrigger(player, input));
         if (desired is null)
         {
+            player.ActionState = null;
             return;
         }
 

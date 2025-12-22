@@ -8,15 +8,15 @@ public sealed class JumpState : IPlayerState
     public string Layer => "Movement";
     public int Priority => 20; // higher than run/idle
 
-    public bool CanEnter(PlayerSnapshot player) => !player.IsGrounded && player.VY < 0.0f;
-    public bool CanContinue(PlayerSnapshot player) => !player.IsGrounded && player.VY < 0.0f;
+    public bool CanEnter(Player player) => !player.IsGrounded && player.VY < 0.0f;
+    public bool CanContinue(Player player) => !player.IsGrounded && player.VY < 0.0f;
 
-    public void OnEnter(PlayerSnapshot player, long tick)
+    public void OnEnter(Player player, long tick)
     {
         player.MovementStateName = Name;
         player.MovementStateStartTick = tick;
         player.LastActivityTick = tick;
     }
 
-    public void OnExit(PlayerSnapshot player, long tick) { }
+    public void OnExit(Player player, long tick) { }
 }

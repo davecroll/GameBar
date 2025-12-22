@@ -46,11 +46,14 @@ public class GameSessionManager
     {
         _simulation.Update(dt);
 
+        var players = _simulation.State.Players
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToSnapshot());
+
         var snapshot = new StateSnapshot
         {
             GameId = _simulation.State.GameId,
             ServerTick = _simulation.State.Tick,
-            Players = new Dictionary<string, PlayerSnapshot>(_simulation.State.Players),
+            Players = players,
             LastProcessedInputSequenceByPlayer = new Dictionary<string, long>(_lastProcessedInputSequenceByPlayer)
         };
 

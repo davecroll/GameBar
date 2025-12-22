@@ -1,6 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using GameBar.Game.Simulation.PlayerFsm;
-using GameBar.Game.Simulation.PlayerFsm.Action;
 
 namespace GameBar.Game.Models;
 
@@ -15,7 +13,6 @@ public enum MovementState
 
 public class PlayerSnapshot
 {
-    // ...existing code...
     public string PlayerId { get; set; } = string.Empty;
     public float X { get; set; } // horizontal position (left/right)
     public float Y { get; set; } // vertical position (up/down); ground at GroundY
@@ -24,46 +21,14 @@ public class PlayerSnapshot
 
     public bool IsGrounded { get; set; } = true; // grounded flag for jump/fall logic
 
-    // ...existing code...
     public long LastActivityTick { get; set; }
     public string MovementStateName { get; set; } = string.Empty;
     public long MovementStateStartTick { get; set; }
     public string? ActionStateName { get; set; }
     public long? ActionStateStartTick { get; set; }
 
+    // This type is intended for transport/serialization.
+    // Keep it reference-free and deterministic.
     [JsonIgnore]
-    public IPlayerState? MovementState { get; set; }
-
-    [JsonIgnore]
-    public IActionState? ActionState { get; set; }
-
-    public BoundingBox? Hurtbox()
-    {
-        var relativeBoundingBox = MovementState?.Hurtbox;
-        if (relativeBoundingBox is not null)
-        {
-            return new BoundingBox(
-                (int)(X + relativeBoundingBox.Value.X),
-                (int)(Y + relativeBoundingBox.Value.Y),
-                relativeBoundingBox.Value.Width,
-                relativeBoundingBox.Value.Height);
-        }
-
-        return null;
-    }
-
-    public BoundingBox? Hitbox()
-    {
-        var relativeBoundingBox = ActionState?.Hitbox;
-        if (relativeBoundingBox is not null)
-        {
-            return new BoundingBox(
-                (int)(X + relativeBoundingBox.Value.X),
-                (int)(Y + relativeBoundingBox.Value.Y),
-                relativeBoundingBox.Value.Width,
-                relativeBoundingBox.Value.Height);
-        }
-
-        return null;
-    }
+    public bool HasActiveAction => !string.IsNullOrEmpty(ActionStateName) && ActionStateStartTick is not null;
 }

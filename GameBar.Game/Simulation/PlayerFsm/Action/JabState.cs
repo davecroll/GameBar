@@ -25,29 +25,29 @@ public sealed class JabState : IActionState
         DurationTicks = Math.Max(1, (frameCount * frameDurationMs) / tickDurationMs);
     }
 
-    public bool CanEnter(PlayerSnapshot player)
+    public bool CanEnter(Player player)
     {
         return true;
     }
 
-    public bool CanContinue(PlayerSnapshot player)
+    public bool CanContinue(Player player)
     {
         return true;
     }
 
-    public bool CanTrigger(PlayerSnapshot player, InputCommand? input)
+    public bool CanTrigger(Player player, InputCommand? input)
     {
         return input is not null && input.Attack;
     }
 
-    public void OnEnter(PlayerSnapshot player, long tick)
+    public void OnEnter(Player player, long tick)
     {
         player.ActionStateName = Name;
         player.ActionStateStartTick = tick;
         player.LastActivityTick = tick;
     }
 
-    public void OnExit(PlayerSnapshot player, long tick)
+    public void OnExit(Player player, long tick)
     {
         player.ActionStateName = null;
         player.ActionStateStartTick = null;

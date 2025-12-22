@@ -10,7 +10,7 @@ public interface IActionState : IPlayerState
     /// <summary>
     /// Whether this action should trigger given current input. Called when no action is active.
     /// </summary>
-    bool CanTrigger(PlayerSnapshot player, InputCommand? input);
+    bool CanTrigger(Player player, InputCommand? input);
 
     /// <summary>
     /// Duration of the action in ticks. Non-looping action ends when elapsed ticks exceed this value.
