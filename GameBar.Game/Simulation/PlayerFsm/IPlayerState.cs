@@ -1,21 +1,20 @@
-﻿using GameBar.Game.Models;
+using GameBar.Game.Models;
 
 namespace GameBar.Game.Simulation.PlayerFsm;
 
 /// <summary>
-/// Interface for a player state in a given layer (e.g., Movement).
-/// Focused on transition logic; animation metadata can be added later.
+/// Base contract for a state that lives in a specific player FSM layer (e.g., Movement, Action).
+/// Contains identity/priority and lifecycle hooks. Layer-specific transition logic belongs in
+/// layer-specific interfaces (e.g., <see cref="GameBar.Game.Simulation.PlayerFsm.IMovementState"/>,
+/// <see cref="IActionState"/>).
 /// </summary>
 public interface IPlayerState
 {
     string Name { get; }
-    string Layer { get; } // e.g., "Movement"
+    string Layer { get; } // e.g., "Movement", "Action"
     int Priority { get; } // higher value wins
 
     BoundingBox? Hurtbox(Player player, long currentTick) => null;
-
-    bool CanEnter(Player player);
-    bool CanContinue(Player player);
 
     void OnEnter(Player player, long tick);
     void OnExit(Player player, long tick);

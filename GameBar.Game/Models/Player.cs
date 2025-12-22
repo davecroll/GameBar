@@ -30,7 +30,7 @@ public sealed class Player
     public long? ActionStateStartTick { get; set; }
 
     // Runtime-only references (not for transport).
-    public IPlayerState? MovementState { get; set; }
+    public IMovementState? MovementState { get; set; }
     public IActionState? ActionState { get; set; }
 
     public BoundingBox? Hurtbox(long currentTick)

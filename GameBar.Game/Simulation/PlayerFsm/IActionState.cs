@@ -1,6 +1,6 @@
 ﻿using GameBar.Game.Models;
 
-namespace GameBar.Game.Simulation.PlayerFsm.Action;
+namespace GameBar.Game.Simulation.PlayerFsm;
 
 /// <summary>
 /// Interface for action-layer states (e.g., attacks) with trigger semantics and duration.

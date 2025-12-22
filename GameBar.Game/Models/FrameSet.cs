@@ -8,14 +8,15 @@ public class FrameSet
     public FrameSet(List<FrameData> frames)
     {
         _frames = frames;
+        _frameBreaks = new float[frames.Count];
 
+        // Precompute frame breakpoints based on frame durations.
         float runningTotal = 0;
-        _frameBreaks = frames.Select(f =>
+        foreach (var (index, frame) in frames.Index())
         {
-            float breakpoint = runningTotal;
-            runningTotal += f.Duration;
-            return breakpoint;
-        }).ToArray();
+            _frameBreaks[index] = runningTotal;
+            runningTotal += frame.Duration;
+        }
 
         Duration = runningTotal;
     }
@@ -24,7 +25,7 @@ public class FrameSet
 
     public FrameData this[int index] => _frames[index];
 
-    public FrameData GetFrameData(float elapsedSeconds, bool invert = false)
+    public FrameData GetFrameData(float elapsedSeconds)
     {
         // Calculate the normalized time within the animation cycle.
         float normalizedTime = elapsedSeconds % Duration;
@@ -40,8 +41,6 @@ public class FrameSet
         }
 
         // Return the frame data.
-        FrameData frameData = _frames[frameIndex];
-
-        return invert ? frameData.Inverted : frameData;
+        return _frames[frameIndex];
     }
 }

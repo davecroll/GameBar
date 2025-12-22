@@ -1,5 +1,4 @@
 ﻿using GameBar.Game.Models;
-using GameBar.Game.Simulation.PlayerFsm.Movement;
 
 namespace GameBar.Game.Simulation.PlayerFsm;
 
@@ -10,9 +9,9 @@ public sealed class MovementStateMachine
 {
     private const int DebounceTicks = 1; // quicker state transitions for jump/fall responsiveness
     private readonly Dictionary<string, (string desiredName, long sinceTick)> _candidates = new();
-    private readonly List<IPlayerState> _states;
+    private readonly List<IMovementState> _states;
 
-    public MovementStateMachine(List<IPlayerState> states)
+    public MovementStateMachine(List<IMovementState> states)
     {
         _states = states
             .OrderByDescending(s => s.Priority)
@@ -29,7 +28,7 @@ public sealed class MovementStateMachine
         }
 
         // Determine desired state from available states based on CanEnter
-        IPlayerState desired = _states.FirstOrDefault(s => s.CanEnter(player)) ?? _states[0];
+        IMovementState desired = _states.FirstOrDefault(s => s.CanEnter(player)) ?? _states[0];
 
         if (!_candidates.TryGetValue(player.PlayerId, out var cand) || cand.desiredName != desired.Name)
         {

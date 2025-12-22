@@ -13,27 +13,11 @@ public sealed class JabState : IActionState
 
     public BoundingBox? Hitbox => new BoundingBox(0, 0, 48, 48);
 
-    private readonly int _tickDurationMs;
-    private readonly int _frameCount;
-    private readonly int _frameDurationMs;
-
     public JabState(int tickDurationMs = 50, int frameCount = 10, int frameDurationMs = 80)
     {
-        _tickDurationMs = tickDurationMs;
-        _frameCount = frameCount;
-        _frameDurationMs = frameDurationMs;
         DurationTicks = Math.Max(1, (frameCount * frameDurationMs) / tickDurationMs);
     }
 
-    public bool CanEnter(Player player)
-    {
-        return true;
-    }
-
-    public bool CanContinue(Player player)
-    {
-        return true;
-    }
 
     public bool CanTrigger(Player player, InputCommand? input)
     {

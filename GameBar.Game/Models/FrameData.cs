@@ -29,44 +29,15 @@ public readonly struct FrameData
 
     private FrameData Invert()
     {
-        // Dictionary to store inverted collision boxes
-        var invertedCollisionBoxes = new Dictionary<string, BoundingBox>();
+        var frameData = this;
+        var invertedCollisionBoxes = CollisionBoxes
+            .ToDictionary(kvp => kvp.Key, kvp => frameData.InvertBox(kvp.Value));
 
-        // Invert all collision boxes
-        foreach (var kvp in CollisionBoxes)
-        {
-            var key = kvp.Key;
-            var box = kvp.Value;
+        var invertedHitbox = Hitbox is { } hitbox ? InvertBox(hitbox) : (BoundingBox?)null;
 
-            var invertedBox = new BoundingBox(
-                Size.Width - box.X - box.Width,
-                box.Y,
-                box.Width,
-                box.Height
-            );
-
-            invertedCollisionBoxes[key] = invertedBox;
-        }
-
-        // Invert the hitbox if present
-        BoundingBox? invertedHitbox = null;
-        if (Hitbox is { } hitbox)
-        {
-            invertedHitbox = new BoundingBox(
-                Size.Width - hitbox.X - hitbox.Width,
-                hitbox.Y,
-                hitbox.Width,
-                hitbox.Height
-            );
-        }
-
-        // Return a new FrameData instance with inverted collision boxes and hitbox
-        return new FrameData(
-            Index,
-            Size,
-            invertedCollisionBoxes,
-            invertedHitbox,
-            Duration
-        );
+        return new FrameData(Index, Size, invertedCollisionBoxes, invertedHitbox, Duration);
     }
+
+    private BoundingBox InvertBox(BoundingBox box)
+        => new(Size.Width - box.X - box.Width, box.Y, box.Width, box.Height);
 }

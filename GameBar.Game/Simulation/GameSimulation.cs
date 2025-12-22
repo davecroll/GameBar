@@ -17,10 +17,14 @@ public class GameSimulation : IGameSimulation
 
     public GameSimulation(Dictionary<string, IPlayerState> playerStates)
     {
-        var movementStates = playerStates.Values.Where(ps => ps.Layer == "Movement").ToList();
+        var movementStates = playerStates.Values
+            .Where(ps => ps.Layer == "Movement")
+            .OfType<IMovementState>()
+            .ToList();
         _movementFsm = new MovementStateMachine(movementStates);
 
-        var actionStates = playerStates.Values.Where(ps => ps.Layer == "Action")
+        var actionStates = playerStates.Values
+            .Where(ps => ps.Layer == "Action")
             .OfType<IActionState>()
             .ToList();
         _actionFsm = new ActionStateMachine(actionStates);

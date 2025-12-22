@@ -2,7 +2,7 @@
 
 namespace GameBar.Game.Simulation.PlayerFsm.Movement;
 
-public sealed class IdleState : IPlayerState
+public sealed class IdleState : IMovementState
 {
     private readonly FrameSet _frameSet = new IdleFrameSet();
 
@@ -10,20 +10,8 @@ public sealed class IdleState : IPlayerState
     public string Layer => "Movement";
     public int Priority => 5;
 
-    public BoundingBox? Hurtbox(Player player, long currentTick)
-    {
-        var ticksSinceStart = currentTick - player.MovementStateStartTick;
-        var elapsedSeconds = ticksSinceStart * 0.05f; // 50ms fixed timestep
-        var frameData = _frameSet.GetFrameData(elapsedSeconds);
-        return frameData.CollisionBoxes.FirstOrDefault().Value;
-    }
-
-    public bool CanEnter(Player player)
-    {
-        return player.IsGrounded && Math.Abs(player.VX) < 0.0001f;
-    }
-
-    public bool CanContinue(Player player) => CanEnter(player);
+    public bool CanEnter(Player player) => player.IsGrounded && Math.Abs(player.VX) < 0.0001f;
+    public bool CanContinue(Player player) => player.IsGrounded && Math.Abs(player.VX) < 0.0001f;
 
     public void OnEnter(Player player, long tick)
     {
@@ -33,4 +21,12 @@ public sealed class IdleState : IPlayerState
     }
 
     public void OnExit(Player player, long tick) { }
+
+    public BoundingBox? Hurtbox(Player player, long currentTick)
+    {
+        var ticksSinceStart = currentTick - player.MovementStateStartTick;
+        var elapsedSeconds = ticksSinceStart * 0.05f; // 50ms fixed timestep
+        var frameData = _frameSet.GetFrameData(elapsedSeconds);
+        return frameData.CollisionBoxes.FirstOrDefault().Value;
+    }
 }

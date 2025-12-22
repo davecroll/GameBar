@@ -2,7 +2,7 @@
 
 namespace GameBar.Game.Simulation.PlayerFsm.Movement;
 
-public sealed class JumpState : IPlayerState
+public sealed class JumpState : IMovementState
 {
     public string Name => "Jump";
     public string Layer => "Movement";

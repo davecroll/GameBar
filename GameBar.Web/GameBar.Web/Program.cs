@@ -1,5 +1,4 @@
 using GameBar.Game.Simulation;
-using GameBar.Web.Client.Pages;
 using GameBar.Web.Components;
 using GameBar.Web.HostedServices;
 using GameBar.Web.Hubs;
