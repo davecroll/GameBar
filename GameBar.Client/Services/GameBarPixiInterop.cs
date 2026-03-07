@@ -65,16 +65,20 @@ public sealed class GameBarPixiInterop : IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Renders the current list of players.
-    /// </summary>
-    public async Task RenderAsync(IEnumerable<PixiPlayer> players)
+    public async Task PushSnapshotAsync(object data)
     {
         if (_destroyed)
             return;
         var module = await GetModuleAsync();
-        var jsPlayers = players.Select(p => new { id = p.Id, x = p.X, y = p.Y, frameIndex = p.FrameIndex, anim = p.Anim, frameWidth = p.FrameWidth, frameHeight = p.FrameHeight }).ToArray();
-        await module.InvokeVoidAsync("render", new { players = jsPlayers });
+        await module.InvokeVoidAsync("pushSnapshot", data);
+    }
+
+    public async Task SetManifestAsync(object data)
+    {
+        if (_destroyed)
+            return;
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("setManifest", data);
     }
 
     /// <summary>
@@ -107,14 +111,6 @@ public sealed class GameBarPixiInterop : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await DestroyAsync();
-    }
-
-    public async Task SetDotNetRefAsync(DotNetObjectReference<GameClientService> serviceRef)
-    {
-        if (_destroyed)
-            return;
-        var module = await GetModuleAsync();
-        await module.InvokeVoidAsync("setDotNetRef", serviceRef);
     }
 
     public async Task StartLoopAsync()

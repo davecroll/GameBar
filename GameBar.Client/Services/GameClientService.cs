@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using System.Text.Json;
 using GameBar.Game.Contracts;
@@ -15,20 +15,13 @@ public class GameClientService
 
     private HubConnection? _connection;
 
-    // Authoritative server snapshot cache
-    private readonly Dictionary<string, PlayerSnapshot> _players = new();
-
     private long _nextInputSequence;
     private string? _localPlayerId;
-
-    private long _latestServerTick;
 
     // Server simulation tick duration, in ms. Must match server's fixed step.
     private const int ServerTickDurationMs = 25;
 
     private AnimationManifest? _manifest;
-
-    private DotNetObjectReference<GameClientService>? _dotNetRef;
 
     public GameClientService(NavigationManager navigationManager, GameBarPixiInterop pixi)
     {
@@ -67,10 +60,9 @@ public class GameClientService
             .WithAutomaticReconnect()
             .Build();
 
-        _connection.On<StateSnapshot>("ReceiveSnapshot", snapshot =>
+        _connection.On<StateSnapshot>("ReceiveSnapshot", async snapshot =>
         {
-            HandleSnapshot(snapshot);
-            return Task.CompletedTask;
+            await HandleSnapshotAsync(snapshot);
         });
 
         await _connection.StartAsync();
@@ -96,15 +88,24 @@ public class GameClientService
         await _connection.SendAsync("SendInput", input);
     }
 
-    private void HandleSnapshot(StateSnapshot snapshot)
+    private async Task HandleSnapshotAsync(StateSnapshot snapshot)
     {
-        _players.Clear();
-        foreach (var kvp in snapshot.Players)
+        var data = new
         {
-            _players[kvp.Key] = kvp.Value;
-        }
+            serverTick = snapshot.ServerTick,
+            players = snapshot.Players.Select(kvp => new
+            {
+                id = kvp.Key,
+                x = kvp.Value.X,
+                y = kvp.Value.Y,
+                movementStateName = kvp.Value.MovementStateName,
+                movementStateStartTick = kvp.Value.MovementStateStartTick,
+                actionStateName = kvp.Value.ActionStateName,
+                actionStateStartTick = kvp.Value.ActionStateStartTick,
+            }).ToArray()
+        };
 
-        _latestServerTick = snapshot.ServerTick;
+        await _pixi.PushSnapshotAsync(data);
     }
 
     // Load the ESM Pixi module once and call its init
@@ -113,8 +114,24 @@ public class GameClientService
         await _pixi.InitAsync(container);
         await _pixi.LoadAssetsAsync();
 
-        _dotNetRef ??= DotNetObjectReference.Create(this);
-        await _pixi.SetDotNetRefAsync(_dotNetRef);
+        // Push animation manifest to JS
+        var manifest = _manifest ?? AnimationManifest.Default;
+        var manifestData = new
+        {
+            tickDurationMs = ServerTickDurationMs,
+            states = manifest.States.ToDictionary(
+                kvp => kvp.Key,
+                kvp => new
+                {
+                    assetKey = kvp.Value.AssetKey,
+                    frameCount = kvp.Value.FrameCount,
+                    frameWidth = kvp.Value.FrameWidth,
+                    frameHeight = kvp.Value.FrameHeight,
+                    frameDurationMs = kvp.Value.FrameDurationMs,
+                    loop = kvp.Value.Loop,
+                })
+        };
+        await _pixi.SetManifestAsync(manifestData);
 
         await _pixi.StartLoopAsync();
     }
@@ -122,50 +139,6 @@ public class GameClientService
     public async Task StopLoopAsync()
     {
         await _pixi.StopLoopAsync();
-    }
-
-    [JSInvokable]
-    public Task<PixiPlayer[]> GetRenderPlayersAsync()
-    {
-        // Render purely from latest authoritative server snapshot; no client-side prediction.
-        var manifest = _manifest ?? AnimationManifest.Default;
-
-        // Convert authoritative server tick into elapsed milliseconds on the server timeline.
-        var currentServerTimeMs = _latestServerTick * ServerTickDurationMs;
-
-        var renderPlayers = new List<PixiPlayer>();
-
-        foreach (var (id, source) in _players)
-        {
-            var stateName = string.IsNullOrEmpty(source.ActionStateName)
-                ? source.MovementStateName
-                : source.ActionStateName!;
-
-            if (!manifest.States.TryGetValue(stateName, out var meta))
-            {
-                meta = manifest.States["Idle"];
-            }
-
-            // Use the appropriate state start tick from the authoritative snapshot.
-            var startTick = string.IsNullOrEmpty(source.ActionStateName)
-                ? source.MovementStateStartTick
-                : source.ActionStateStartTick ?? source.MovementStateStartTick;
-
-            var startTimeMs = startTick * ServerTickDurationMs;
-            var elapsedMs = Math.Max(0, currentServerTimeMs - startTimeMs);
-
-            var frameDurationMs = Math.Max(1, meta.FrameDurationMs);
-            var frames = Math.Max(1, meta.FrameCount);
-
-            var steps = (int)(elapsedMs / frameDurationMs);
-            var frameIndex = meta.Loop
-                ? steps % frames
-                : Math.Min(frames - 1, steps);
-
-            renderPlayers.Add(new PixiPlayer(id, source.X, source.Y, frameIndex, meta.AssetKey, meta.FrameWidth, meta.FrameHeight));
-        }
-
-        return Task.FromResult(renderPlayers.ToArray());
     }
 
     // Gracefully destroy Pixi

@@ -1,5 +1,5 @@
 ﻿{
-  "TickDurationMs": 50,
+  "TickDurationMs": 25,
   "States": {
     "Idle": { "AssetKey": "idle", "FrameCount": 10, "FrameWidth": 48, "FrameHeight": 48, "FrameDurationMs": 95, "Loop": true },
     "Run":  { "AssetKey": "run",  "FrameCount": 8,  "FrameWidth": 48, "FrameHeight": 48, "FrameDurationMs": 80, "Loop": true },
