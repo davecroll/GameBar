@@ -1,5 +1,5 @@
-using GameBar.Game.Simulation.PlayerFsm;
-using GameBar.Game.Simulation.PlayerFsm.Action;
+using GameBar.Game.Contracts;
+using GameBar.Game.Simulation.StateMachine;
 
 namespace GameBar.Game.Models;
 

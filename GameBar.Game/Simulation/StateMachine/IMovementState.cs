@@ -1,6 +1,6 @@
 using GameBar.Game.Models;
 
-namespace GameBar.Game.Simulation.PlayerFsm;
+namespace GameBar.Game.Simulation.StateMachine;
 
 /// <summary>
 /// Movement-layer state contract.
@@ -16,4 +16,3 @@ public interface IMovementState : IPlayerState
     /// </summary>
     bool CanContinue(Player player);
 }
-

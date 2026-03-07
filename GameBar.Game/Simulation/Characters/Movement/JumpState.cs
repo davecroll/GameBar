@@ -1,6 +1,7 @@
-﻿using GameBar.Game.Models;
+using GameBar.Game.Models;
+using GameBar.Game.Simulation.StateMachine;
 
-namespace GameBar.Game.Simulation.PlayerFsm.Movement;
+namespace GameBar.Game.Simulation.Characters.Movement;
 
 public sealed class JumpState : IMovementState
 {

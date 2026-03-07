@@ -1,4 +1,5 @@
-﻿using GameBar.Game.Models;
+﻿using GameBar.Game.Contracts;
+using GameBar.Game.Models;
 
 namespace GameBar.Game.Simulation;
 

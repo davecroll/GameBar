@@ -1,6 +1,8 @@
-﻿using GameBar.Game.Models;
+using GameBar.Game.Contracts;
+using GameBar.Game.Models;
+using GameBar.Game.Simulation.StateMachine;
 
-namespace GameBar.Game.Simulation.PlayerFsm.Action;
+namespace GameBar.Game.Simulation.Characters.Action;
 
 public sealed class JabState : IActionState
 {
@@ -17,7 +19,6 @@ public sealed class JabState : IActionState
     {
         DurationTicks = Math.Max(1, (frameCount * frameDurationMs) / tickDurationMs);
     }
-
 
     public bool CanTrigger(Player player, InputCommand? input)
     {

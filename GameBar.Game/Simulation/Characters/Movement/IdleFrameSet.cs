@@ -1,6 +1,6 @@
-﻿using GameBar.Game.Models;
+using GameBar.Game.Models;
 
-namespace GameBar.Game.Simulation.PlayerFsm.Movement;
+namespace GameBar.Game.Simulation.Characters.Movement;
 
 public class IdleFrameSet() : FrameSet(Frames)
 {

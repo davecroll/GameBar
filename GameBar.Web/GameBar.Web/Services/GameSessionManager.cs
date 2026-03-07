@@ -1,4 +1,4 @@
-﻿using GameBar.Game.Models;
+﻿using GameBar.Game.Contracts;
 using GameBar.Game.Simulation;
 using GameBar.Web.Hubs;
 using Microsoft.AspNetCore.SignalR;

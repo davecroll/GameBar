@@ -1,6 +1,7 @@
-﻿using GameBar.Game.Models;
+using GameBar.Game.Contracts;
+using GameBar.Game.Models;
 
-namespace GameBar.Game.Simulation.PlayerFsm;
+namespace GameBar.Game.Simulation.StateMachine;
 
 /// <summary>
 /// Interface for action-layer states (e.g., attacks) with trigger semantics and duration.
@@ -21,6 +22,6 @@ public interface IActionState : IPlayerState
     /// Whether this action can be interrupted by another higher-priority action.
     /// </summary>
     bool Interruptible { get; }
-    
+
     BoundingBox? Hitbox => null;
 }

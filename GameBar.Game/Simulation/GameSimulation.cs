@@ -1,6 +1,7 @@
-﻿using GameBar.Game.Models;
-using GameBar.Game.Simulation.PlayerFsm;
-using GameBar.Game.Simulation.PlayerFsm.Action;
+﻿using GameBar.Game.Contracts;
+using GameBar.Game.Models;
+using GameBar.Game.Simulation.StateMachine;
+using Microsoft.Extensions.Logging;
 
 namespace GameBar.Game.Simulation;
 
@@ -12,11 +13,11 @@ public class GameSimulation : IGameSimulation
 
     private readonly MovementStateMachine _movementFsm;
     private readonly ActionStateMachine _actionFsm;
+    private readonly ILogger<GameSimulation> _logger;
 
-    private const float GroundY = 400;
-
-    public GameSimulation(Dictionary<string, IPlayerState> playerStates)
+    public GameSimulation(Dictionary<string, IPlayerState> playerStates, ILogger<GameSimulation> logger)
     {
+        _logger = logger;
         var movementStates = playerStates.Values
             .Where(ps => ps.Layer == "Movement")
             .OfType<IMovementState>()
@@ -85,9 +86,9 @@ public class GameSimulation : IGameSimulation
             player.Y += player.VY * dtSeconds;
 
             // Ground collision at GroundY
-            if (player.Y >= GroundY)
+            if (player.Y >= GameConstants.GroundY)
             {
-                player.Y = GroundY;
+                player.Y = GameConstants.GroundY;
                 player.VY = 0;
                 player.IsGrounded = true;
             }
@@ -128,7 +129,7 @@ public class GameSimulation : IGameSimulation
 
                 if (hitbox.Value.Intersects(hurtbox.Value))
                 {
-                    Console.WriteLine($"Attacker ({attackerId}) hit player ({defenderId})");
+                    _logger.LogInformation("Attacker ({AttackerId}) hit player ({DefenderId})", attackerId, defenderId);
                 }
             }
         }

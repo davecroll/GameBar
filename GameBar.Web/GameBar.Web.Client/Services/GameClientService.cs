@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Text.Json;
-using GameBar.Game.Models;
+using GameBar.Game.Contracts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.JSInterop;

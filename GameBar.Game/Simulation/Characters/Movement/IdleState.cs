@@ -1,6 +1,7 @@
-﻿using GameBar.Game.Models;
+using GameBar.Game.Models;
+using GameBar.Game.Simulation.StateMachine;
 
-namespace GameBar.Game.Simulation.PlayerFsm.Movement;
+namespace GameBar.Game.Simulation.Characters.Movement;
 
 public sealed class IdleState : IMovementState
 {
@@ -25,7 +26,7 @@ public sealed class IdleState : IMovementState
     public BoundingBox? Hurtbox(Player player, long currentTick)
     {
         var ticksSinceStart = currentTick - player.MovementStateStartTick;
-        var elapsedSeconds = ticksSinceStart * 0.05f; // 50ms fixed timestep
+        var elapsedSeconds = ticksSinceStart * GameConstants.TickIntervalSeconds;
         var frameData = _frameSet.GetFrameData(elapsedSeconds);
         return frameData.CollisionBoxes.FirstOrDefault().Value;
     }

@@ -1,4 +1,7 @@
 using GameBar.Game.Simulation;
+using GameBar.Game.Simulation.StateMachine;
+using GameBar.Game.Simulation.Characters.Movement;
+using GameBar.Game.Simulation.Characters.Action;
 using GameBar.Web.Components;
 using GameBar.Web.HostedServices;
 using GameBar.Web.Hubs;
@@ -14,18 +17,19 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<IGameSimulation, GameSimulation>(_ =>
+builder.Services.AddSingleton<IGameSimulation, GameSimulation>(sp =>
 {
-    var playerStates = new Dictionary<string, GameBar.Game.Simulation.PlayerFsm.IPlayerState>
+    var playerStates = new Dictionary<string, IPlayerState>
     {
-        { "Idle", new GameBar.Game.Simulation.PlayerFsm.Movement.IdleState() },
-        { "Run", new GameBar.Game.Simulation.PlayerFsm.Movement.RunState() },
-        { "Fall", new GameBar.Game.Simulation.PlayerFsm.Movement.FallState() },
-        { "Jump", new GameBar.Game.Simulation.PlayerFsm.Movement.JumpState() },
-        { "Jab", new GameBar.Game.Simulation.PlayerFsm.Action.JabState() }
+        { "Idle", new IdleState() },
+        { "Run", new RunState() },
+        { "Fall", new FallState() },
+        { "Jump", new JumpState() },
+        { "Jab", new JabState() }
     };
 
-    return new GameSimulation(playerStates);
+    var logger = sp.GetRequiredService<ILogger<GameSimulation>>();
+    return new GameSimulation(playerStates, logger);
 });
 builder.Services.AddSingleton<GameSessionManager>();
 builder.Services.AddHostedService<GameLoopHostedService>();

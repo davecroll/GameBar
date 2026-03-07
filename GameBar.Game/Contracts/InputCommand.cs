@@ -1,4 +1,4 @@
-﻿namespace GameBar.Game.Models;
+namespace GameBar.Game.Contracts;
 
 public class InputCommand
 {
@@ -10,5 +10,5 @@ public class InputCommand
     public bool Left { get; set; }
     public bool Right { get; set; }
     public bool Attack { get; set; }
-    public bool Jump { get; set; } // new jump trigger (edge-triggered when true on a tick)
+    public bool Jump { get; set; }
 }

@@ -1,4 +1,4 @@
-﻿namespace GameBar.Game.Models;
+namespace GameBar.Game.Contracts;
 
 public class StateSnapshot
 {

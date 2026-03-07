@@ -1,12 +1,11 @@
 using GameBar.Game.Models;
 
-namespace GameBar.Game.Simulation.PlayerFsm;
+namespace GameBar.Game.Simulation.StateMachine;
 
 /// <summary>
 /// Base contract for a state that lives in a specific player FSM layer (e.g., Movement, Action).
 /// Contains identity/priority and lifecycle hooks. Layer-specific transition logic belongs in
-/// layer-specific interfaces (e.g., <see cref="GameBar.Game.Simulation.PlayerFsm.IMovementState"/>,
-/// <see cref="IActionState"/>).
+/// layer-specific interfaces (e.g., <see cref="IMovementState"/>, <see cref="IActionState"/>).
 /// </summary>
 public interface IPlayerState
 {

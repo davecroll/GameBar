@@ -1,6 +1,6 @@
-﻿using GameBar.Game.Models;
+using GameBar.Game.Models;
 
-namespace GameBar.Game.Simulation.PlayerFsm;
+namespace GameBar.Game.Simulation.StateMachine;
 
 /// <summary>
 /// Minimal state machine for the Movement layer with Idle and Run.

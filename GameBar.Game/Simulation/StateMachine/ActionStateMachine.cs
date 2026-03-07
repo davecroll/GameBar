@@ -1,7 +1,7 @@
-﻿using GameBar.Game.Models;
-using GameBar.Game.Simulation.PlayerFsm.Action;
+using GameBar.Game.Contracts;
+using GameBar.Game.Models;
 
-namespace GameBar.Game.Simulation.PlayerFsm;
+namespace GameBar.Game.Simulation.StateMachine;
 
 public sealed class ActionStateMachine
 {
