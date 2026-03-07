@@ -1,5 +1,5 @@
 using GameBar.Game.Contracts;
-using GameBar.Game.Simulation.StateMachine;
+using GameBar.Game.StateMachine;
 
 namespace GameBar.Game.Models;
 

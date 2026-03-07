@@ -1,0 +1,110 @@
+﻿@page "/game"
+@using GameBar.Client.Services
+@using Microsoft.AspNetCore.Components.Web
+@inject GameClientService GameClient
+@rendermode InteractiveAuto
+@implements IAsyncDisposable
+
+<div @ref="_focusDiv" @onkeydown="HandleKeyDown" @onkeyup="HandleKeyUp" tabindex="0" style="outline:none;">
+    <div @ref="_gameContainer" style="width:800px;height:600px;border:1px solid #ccc;"></div>
+</div>
+
+@code {
+    private ElementReference _gameContainer;
+    private ElementReference _focusDiv;
+
+    private bool _up, _down, _left, _right, _attack, _jump;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await GameClient.InitializeAsync();
+            await GameClient.InitPixiAsync(_gameContainer);
+            await _focusDiv.FocusAsync();
+        }
+    }
+
+    private async Task SendCurrentInputAsync()
+    {
+        await GameClient.SendInputAsync(_up, _down, _left, _right, _attack, _jump);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        var changed = false;
+        switch (e.Key)
+        {
+            case "w":
+            case "ArrowUp":
+                if (!_up) { _up = true; changed = true; }
+                break;
+            case "s":
+            case "ArrowDown":
+                if (!_down) { _down = true; changed = true; }
+                break;
+            case "a":
+            case "ArrowLeft":
+                if (!_left) { _left = true; changed = true; }
+                break;
+            case "d":
+            case "ArrowRight":
+                if (!_right) { _right = true; changed = true; }
+                break;
+            case "j":
+            case "J":
+                if (!_attack) { _attack = true; changed = true; }
+                break;
+            case " ": // spacebar jump
+                if (!_jump) { _jump = true; changed = true; }
+                break;
+        }
+
+        if (changed)
+        {
+            await SendCurrentInputAsync();
+        }
+    }
+
+    private async Task HandleKeyUp(KeyboardEventArgs e)
+    {
+        var changed = false;
+        switch (e.Key)
+        {
+            case "w":
+            case "ArrowUp":
+                if (_up) { _up = false; changed = true; }
+                break;
+            case "s":
+            case "ArrowDown":
+                if (_down) { _down = false; changed = true; }
+                break;
+            case "a":
+            case "ArrowLeft":
+                if (_left) { _left = false; changed = true; }
+                break;
+            case "d":
+            case "ArrowRight":
+                if (_right) { _right = false; changed = true; }
+                break;
+            case "j":
+            case "J":
+                if (_attack) { _attack = false; changed = true; }
+                break;
+            case " ":
+                if (_jump) { _jump = false; changed = true; }
+                break;
+        }
+
+        if (changed)
+        {
+            await SendCurrentInputAsync();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await GameClient.StopLoopAsync();
+        await GameClient.DestroyAsync();
+    }
+}
